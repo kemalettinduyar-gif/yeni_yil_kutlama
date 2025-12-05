@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Yıl Sonu Kutlaması</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      background: linear-gradient(to top, #1a1a1a, #0d0d0d);
+      font-family: 'Arial', sans-serif;
+      color: #fff;
+      text-align: center;
+    }
+
+    h1 {
+      position: absolute;
+      top: 40%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 3em;
+      z-index: 10;
+      text-shadow: 2px 2px 10px gold;
+    }
+
+    button {
+      position: absolute;
+      top: 60%;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 10px 20px;
+      font-size: 1.2em;
+      cursor: pointer;
+      border: none;
+      border-radius: 10px;
+      background: gold;
+      color: black;
+      transition: transform 0.2s;
+    }
+
+    button:hover {
+      transform: translateX(-50%) scale(1.1);
+    }
+
+    .confetti {
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      background-color: red;
+      opacity: 0.7;
+      pointer-events: none;
+      z-index: 5;
+    }
+  </style>
+</head>
+<body>
+  <h1>Mutlu Yıllar 2026!</h1>
+  <button onclick="startConfetti()">Kutlamayı Başlat 🎉</button>
+
+  <script>
+    const colors = ['#f94144','#f3722c','#f9c74f','#90be6d','#43aa8b','#577590','#f72585'];
+    let confettis = [];
+
+    function createConfetti() {
+      const confetti = document.createElement('div');
+      confetti.classList.add('confetti');
+      confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+      confetti.style.left = Math.random() * window.innerWidth + 'px';
+      confetti.style.top = '-10px';
+      confetti.style.width = (5 + Math.random() * 10) + 'px';
+      confetti.style.height = confetti.style.width;
+      confetti.speed = 2 + Math.random() * 4;
+      confetti.angle = Math.random() * 360;
+      confetti.angularSpeed = Math.random() * 10 - 5;
+      document.body.appendChild(confetti);
+      confettis.push(confetti);
+    }
+
+    function updateConfetti() {
+      confettis.forEach((c, i) => {
+        c.style.top = parseFloat(c.style.top) + c.speed + 'px';
+        c.style.left = parseFloat(c.style.left) + Math.sin(c.angle * Math.PI / 180) * 2 + 'px';
+        c.angle += c.angularSpeed;
+        if (parseFloat(c.style.top) > window.innerHeight) {
+          c.remove();
+          confettis.splice(i,1);
+        }
+      });
+      requestAnimationFrame(updateConfetti);
+    }
+
+    function startConfetti() {
+      for(let i=0; i<150; i++){
+        setTimeout(createConfetti, i * 10);
+      }
+      updateConfetti();
+    }
+  </script>
+</body>
+</html>
