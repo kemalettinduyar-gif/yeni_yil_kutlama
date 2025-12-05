@@ -120,7 +120,6 @@
       z-index: 20;
     }
 
-    /* 📌 FOOTER DÜZENLENDİ */
     .footer{
       position:absolute;
       bottom:18px;
@@ -133,7 +132,7 @@
       padding:8px 12px;
       border-radius:10px;
       backdrop-filter: blur(4px);
-      white-space: nowrap; /* ALT SATIRA DÜŞMEYİ ÖNLER */
+      white-space: nowrap;
     }
 
     @media (max-width:480px){
@@ -170,16 +169,16 @@
     <div class="footer">Bu sayfa: KEMALETTİN DUYAR tarafından hazırlanmıştır.</div>
   </div>
 
-  <!-- Müzik -->
+  <!-- YENİ MOBİL UYUMLU MÜZİK -->
   <audio id="music" loop preload="auto"
-    src="https://assets.mixkit.co/music/preview/mixkit-happy-upbeat-new-year-1296.mp3"></audio>
+    src="https://cdn.pixabay.com/download/audio/2022/03/01/audio_11ac392cda.mp3?filename=new-year-party-10980.mp3"></audio>
 
-  <!-- Patlama sesi -->
+  <!-- YENİ MOBİL UYUMLU PATLAMA SESİ -->
   <audio id="boom" preload="auto"
-    src="https://assets.mixkit.co/active_storage/sfx/2001/2001-preview.mp3"></audio>
+    src="https://cdn.pixabay.com/audio/2022/03/15/audio_404cf2e2ee.mp3"></audio>
 
   <script>
-    /* ----- CANVAS AYARLARI ----- */
+    /* ---------------- CANVAS ---------------- */
     const fwCanvas = document.getElementById('fireworksCanvas');
     const fwCtx = fwCanvas.getContext('2d');
     const snowCanvas = document.getElementById('snowCanvas');
@@ -194,7 +193,7 @@
     resizeAll();
     window.addEventListener('resize', resizeAll);
 
-    /* ----- KAR YAĞIŞI ----- */
+    /* --------- KAR YAĞIŞI --------- */
     const snowParticles = [];
     const SNOW_COUNT = 150;
 
@@ -237,7 +236,8 @@
     }
     updateSnow();
 
-    /* ----- HAVAİ FİŞEKLER ----- */
+
+    /* --------- HAVAİ FİŞEK --------- */
     let fireworks = [];
     let particles = [];
     let fwAnimRunning = false;
@@ -309,7 +309,7 @@
     }
 
     function createParticles(x,y,color){
-      const count = 60;
+      const count = 70;
       for(let i=0;i<count;i++){
         particles.push(new Particle(x,y,color));
       }
@@ -327,8 +327,6 @@
 
     function updateFireworks(){
       fwCtx.clearRect(0,0,fwCanvas.width,fwCanvas.height);
-      fwCtx.fillStyle = "rgba(0,0,0,0.2)";
-      fwCtx.fillRect(0,0,fwCanvas.width,fwCanvas.height);
 
       for(let i=fireworks.length-1;i>=0;i--){
         fireworks[i].update();
@@ -349,7 +347,8 @@
       if(fwAnimRunning) requestAnimationFrame(updateFireworks);
     }
 
-    /* ----- SES ----- */
+
+    /* --------- SES --------- */
     const music = document.getElementById("music");
     const boomSound = document.getElementById("boom");
     let soundOn = false;
@@ -361,7 +360,7 @@
       s.play().catch(()=>{});
     }
 
-    /* ----- BUTONLAR ----- */
+    /* --------- BUTONLAR --------- */
     const startBtn = document.getElementById("startBtn");
     const stopBtn = document.getElementById("stopBtn");
     const muteBtn = document.getElementById("muteBtn");
@@ -372,7 +371,8 @@
 
       soundOn = true;
       music.volume = 0.5;
-      music.play().catch(()=>{});
+      music.muted = false;
+      music.play().then(()=>{}).catch(()=>{});
 
       for(let i=0;i<3;i++) setTimeout(launchRandomFirework, i*300);
       launchTimer = setInterval(launchRandomFirework, 800);
@@ -385,14 +385,13 @@
     }
 
     function stopAll(){
-      if(!fwAnimRunning) return;
-
       fwAnimRunning = false;
       clearInterval(launchTimer);
       launchTimer = null;
 
       music.pause();
       music.currentTime = 0;
+
       soundOn = false;
       muteBtn.innerText = "🔊 Ses Kapalı";
 
