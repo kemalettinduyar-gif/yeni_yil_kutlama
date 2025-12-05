@@ -9,7 +9,7 @@
       margin: 0;
       padding: 0;
       overflow: hidden;
-      background: linear-gradient(to top, #1a1a1a, #0d0d0d);
+      background: radial-gradient(circle at center, #1c1c1c, #000);
       font-family: 'Arial', sans-serif;
       color: #fff;
       text-align: center;
@@ -17,86 +17,129 @@
 
     h1 {
       position: absolute;
-      top: 40%;
+      top: 32%;
       left: 50%;
       transform: translate(-50%, -50%);
-      font-size: 3em;
+      font-size: 2.5em;
       z-index: 10;
-      text-shadow: 2px 2px 10px gold;
+      text-shadow: 0 0 15px gold;
+      padding: 0 15px;
     }
 
     button {
       position: absolute;
-      top: 60%;
+      top: 55%;
       left: 50%;
       transform: translateX(-50%);
-      padding: 10px 20px;
-      font-size: 1.2em;
+      padding: 15px 25px;
+      font-size: 1.3em;
       cursor: pointer;
       border: none;
-      border-radius: 10px;
-      background: gold;
+      border-radius: 15px;
+      background: linear-gradient(45deg, gold, orange);
       color: black;
-      transition: transform 0.2s;
+      font-weight: bold;
+      box-shadow: 0 0 20px rgba(255,215,0,0.7);
+      transition: 0.3s;
+      z-index: 10;
     }
 
     button:hover {
       transform: translateX(-50%) scale(1.1);
+      box-shadow: 0 0 25px gold;
     }
 
-    .confetti {
+    canvas {
       position: absolute;
-      width: 10px;
-      height: 10px;
-      background-color: red;
-      opacity: 0.7;
-      pointer-events: none;
-      z-index: 5;
+      top: 0;
+      left: 0;
     }
   </style>
 </head>
 <body>
-  <h1>Mutlu Yıllar 2026!</h1>
-  <button onclick="startConfetti()">Kutlamayı Başlat 🎉</button>
+
+  <h1>Mutlu Yıllar 2026 🎆</h1>
+  <button onclick="startFireworks()">Kutlamayı Başlat 🎉</button>
+
+  <!-- Havai fişek sesi -->
+  <audio id="sound" src="https://assets.mixkit.co/active_storage/sfx/2001/2001-preview.mp3"></audio>
+
+  <canvas id="canvas"></canvas>
 
   <script>
-    const colors = ['#f94144','#f3722c','#f9c74f','#90be6d','#43aa8b','#577590','#f72585'];
-    let confettis = [];
+    const canvas = document.getElementById("canvas");
+    const ctx = canvas.getContext("2d");
 
-    function createConfetti() {
-      const confetti = document.createElement('div');
-      confetti.classList.add('confetti');
-      confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
-      confetti.style.left = Math.random() * window.innerWidth + 'px';
-      confetti.style.top = '-10px';
-      confetti.style.width = (5 + Math.random() * 10) + 'px';
-      confetti.style.height = confetti.style.width;
-      confetti.speed = 2 + Math.random() * 4;
-      confetti.angle = Math.random() * 360;
-      confetti.angularSpeed = Math.random() * 10 - 5;
-      document.body.appendChild(confetti);
-      confettis.push(confetti);
+    // Boyutu ayarla
+    function resize() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
     }
+    resize();
+    window.onresize = resize;
 
-    function updateConfetti() {
-      confettis.forEach((c, i) => {
-        c.style.top = parseFloat(c.style.top) + c.speed + 'px';
-        c.style.left = parseFloat(c.style.left) + Math.sin(c.angle * Math.PI / 180) * 2 + 'px';
-        c.angle += c.angularSpeed;
-        if (parseFloat(c.style.top) > window.innerHeight) {
-          c.remove();
-          confettis.splice(i,1);
-        }
-      });
-      requestAnimationFrame(updateConfetti);
-    }
-
-    function startConfetti() {
-      for(let i=0; i<150; i++){
-        setTimeout(createConfetti, i * 10);
+    // Firework parçacıkları
+    class Particle {
+      constructor(x, y, color) {
+        this.x = x;
+        this.y = y;
+        this.color = color;
+        this.radius = Math.random() * 3 + 2;
+        this.speedX = Math.random() * 6 - 3;
+        this.speedY = Math.random() * 6 - 3;
+        this.alpha = 1;
       }
-      updateConfetti();
+
+      update() {
+        this.x += this.speedX;
+        this.y += this.speedY;
+        this.alpha -= 0.02;
+      }
+
+      draw() {
+        ctx.globalAlpha = this.alpha;
+        ctx.fillStyle = this.color;
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.globalAlpha = 1;
+      }
+    }
+
+    let particles = [];
+
+    function fireworks() {
+      particles.forEach((p, i) => {
+        p.update();
+        p.draw();
+        if (p.alpha <= 0) particles.splice(i, 1);
+      });
+
+      requestAnimationFrame(fireworks);
+    }
+
+    function createFirework() {
+      const x = Math.random() * canvas.width;
+      const y = Math.random() * canvas.height * 0.5;
+      const colors = ["#ff595e", "#ffca3a", "#8ac926", "#1982c4", "#6a4c93", "white", "gold"];
+
+      for (let i = 0; i < 40; i++) {
+        particles.push(new Particle(x, y, colors[Math.floor(Math.random() * colors.length)]));
+      }
+    }
+
+    function startFireworks() {
+      document.getElementById("sound").play();
+
+      for (let i = 0; i < 5; i++) {
+        setTimeout(createFirework, i * 300);
+      }
+
+      setInterval(createFirework, 800);
+
+      fireworks();
     }
   </script>
+
 </body>
 </html>
