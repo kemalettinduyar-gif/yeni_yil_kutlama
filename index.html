@@ -55,17 +55,9 @@
       font-size: 1rem;
     }
 
-    #startBtn {
-      background: #ffd36b;
-      color: #000;
-    }
+    #startBtn { background: #ffd36b; color: #000; }
+    #muteBtn { background: #333; color: white; }
 
-    #muteBtn {
-      background: #333;
-      color: white;
-    }
-
-    /* Kar efekti */
     .snowflake {
       position: fixed;
       top: -10px;
@@ -82,7 +74,6 @@
       }
     }
 
-    /* Patlama parçacıkları */
     .dot {
       position: absolute;
       width: 6px;
@@ -122,13 +113,21 @@
 
   <div class="footer">Bu sayfa: KEMALETTİN DUYAR tarafından hazırlanmıştır.</div>
 
-  <!-- Arka plan müziği -->
+  <!-- Sesler -->
+  <audio id="launchSound" preload="auto"
+     src="https://cdn.pixabay.com/download/audio/2021/08/04/audio_3fc05236e3.mp3?filename=rocket-launch-6085.mp3">
+  </audio>
+
+  <audio id="boomSound" preload="auto"
+     src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_404cf2e2ee.mp3">
+  </audio>
+
   <audio id="music" loop preload="auto"
-    src="https://cdn.pixabay.com/download/audio/2022/03/01/audio_11ac392cda.mp3?filename=new-year-party-10980.mp3">
+     src="https://cdn.pixabay.com/download/audio/2022/03/01/audio_11ac392cda.mp3">
   </audio>
 
   <script>
-    /* ----------------- KAR YAĞIŞI ----------------- */
+    /* ------------------------ KAR ------------------------ */
     function createSnow() {
       const s = document.createElement("div");
       s.classList.add("snowflake");
@@ -142,34 +141,46 @@
     setInterval(createSnow, 120);
 
 
-    /* ----------------- SES DOSYALARI ----------------- */
-    let fireworkSoundSrc =
-      "https://cdn.pixabay.com/download/audio/2022/03/15/audio_49709c8a31.mp3?filename=firework-1-113172.mp3";
+    /* ------------------------ SES ------------------------ */
+    const launchSound = document.getElementById("launchSound");
+    const boomSound = document.getElementById("boomSound");
+    const bgMusic = document.getElementById("music");
 
-    let bgMusic = document.getElementById("music");
-    let userActivated = false;
     let soundEnabled = false;
+    let unlocked = false;
 
-    function unlockSound() {
-      if (userActivated) return;
+    function unlockSounds() {
+      if (unlocked) return;
 
-      bgMusic.play().then(() => {
-        bgMusic.pause();
-        bgMusic.currentTime = 0;
-      });
+      launchSound.play().catch(()=>{});
+      boomSound.play().catch(()=>{});
+      bgMusic.play().catch(()=>{});
 
-      userActivated = true;
+      launchSound.pause();
+      boomSound.pause();
+      bgMusic.pause();
+
+      launchSound.currentTime = 0;
+      boomSound.currentTime = 0;
+      bgMusic.currentTime = 0;
+
+      unlocked = true;
     }
 
-    function playFirework() {
+    function playLaunch() {
       if (!soundEnabled) return;
-      const boom = new Audio(fireworkSoundSrc);
-      boom.volume = 1;
-      boom.play().catch(()=>{});
+      launchSound.currentTime = 0;
+      launchSound.play().catch(()=>{});
+    }
+
+    function playBoom() {
+      if (!soundEnabled) return;
+      boomSound.currentTime = 0;
+      boomSound.play().catch(()=>{});
     }
 
 
-    /* ----------------- HAVAİ FİŞEK ----------------- */
+    /* ---------------------- HAVAİ FİŞEK ---------------------- */
     function explode(x, y) {
       for (let i = 0; i < 36; i++) {
         const dot = document.createElement("div");
@@ -180,46 +191,46 @@
         document.body.appendChild(dot);
 
         const angle = Math.random() * 360;
-        const distance = 120 + Math.random() * 80;
+        const distance = 160 + Math.random() * 120;
 
         setTimeout(() => {
-          dot.style.transition = "1.5s ease-out";
+          dot.style.transition = "1.8s ease-out";
           dot.style.transform = `translate(${Math.cos(angle)*distance}px, ${Math.sin(angle)*distance}px)`;
           dot.style.opacity = 0;
         }, 10);
 
-        setTimeout(() => dot.remove(), 1800);
+        setTimeout(() => dot.remove(), 2000);
       }
     }
 
     function startShow() {
-      unlockSound();
+      unlockSounds();
 
-      if (soundEnabled) {
-        bgMusic.play().catch(()=>{});
-      }
+      if (soundEnabled) bgMusic.play().catch(()=>{});
 
       for (let i = 0; i < 12; i++) {
         setTimeout(() => {
           const x = Math.random()*window.innerWidth*0.8 + window.innerWidth*0.1;
           const y = Math.random()*window.innerHeight*0.4 + 150;
 
+          playLaunch();   // önce fırlama sesi
+          setTimeout(playBoom, 500); // yarım saniye sonra patlama sesi
+
           explode(x, y);
-          playFirework();
 
         }, i * 1100);
       }
     }
 
 
-    /* ----------------- BUTONLAR ----------------- */
+    /* ------------------------ BUTONLAR ------------------------ */
     document.getElementById("startBtn").onclick = startShow;
 
     document.getElementById("muteBtn").onclick = () => {
       soundEnabled = !soundEnabled;
 
       if (soundEnabled) {
-        unlockSound();
+        unlockSounds();
         bgMusic.play().catch(()=>{});
         document.getElementById("muteBtn").innerText = "🔊 Ses Açık";
       } else {
