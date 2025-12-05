@@ -1,127 +1,170 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-<meta charset="UTF-8">
-<title>Yılbaşı Kutlama</title>
-<style>
-  body {
-    margin: 0;
-    overflow: hidden;
-    background: linear-gradient(to bottom, #000428, #004e92);
-    font-family: Arial, sans-serif;
-    color: white;
-    text-align: center;
-  }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Yılbaşı Kutlaması 2026</title>
 
-  h1 {
-    margin-top: 40px;
-    font-size: 48px;
-    letter-spacing: 2px;
-    text-shadow: 0 0 10px #fff;
-  }
-
-  #startBtn {
-    margin-top: 20px;
-    padding: 15px 35px;
-    font-size: 22px;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    background: #ffcc00;
-    box-shadow: 0 0 10px #ffd633;
-  }
-
-  /* KAR TANESİ */
-  .snowflake {
-    position: fixed;
-    top: -10px;
-    color: white;
-    user-select: none;
-    pointer-events: none;
-    animation-name: fall;
-    animation-timing-function: linear;
-  }
-
-  @keyframes fall {
-    to {
-      transform: translateY(100vh);
-      opacity: 0;
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      font-family: "Arial", sans-serif;
+      background: linear-gradient(to top, #0a0a0a, #1b1b1b);
+      color: #fff;
+      text-align: center;
     }
-  }
-</style>
+
+    h1 {
+      margin-top: 18vh;
+      font-size: 3rem;
+      text-shadow: 0 0 15px gold;
+    }
+
+    h2 {
+      margin-top: 10px;
+      font-size: 1.6rem;
+      color: #ffe680;
+    }
+
+    p {
+      margin-top: 15px;
+      font-size: 1.2rem;
+      opacity: 0.9;
+    }
+
+    button {
+      margin-top: 40px;
+      padding: 14px 28px;
+      font-size: 1.2rem;
+      border-radius: 12px;
+      background: gold;
+      border: none;
+      cursor: pointer;
+      color: #000;
+      transition: 0.2s;
+    }
+
+    button:hover {
+      transform: scale(1.1);
+    }
+
+    /* Footer */
+    .footer{
+      position:absolute;
+      bottom:18px;
+      left:50%;
+      transform:translateX(-50%);
+      z-index:20;
+      color:rgba(255,255,255,0.75);
+      font-size:0.9rem;
+      background: rgba(0,0,0,0.25);
+      padding:8px 12px;
+      border-radius:10px;
+      backdrop-filter: blur(4px);
+      white-space: nowrap;
+    }
+
+    @media(max-width:480px){
+      h1 { font-size: 2.2rem; }
+      h2 { font-size: 1.3rem; }
+      p  { font-size: 1.05rem; }
+      button { font-size: 1.1rem; padding: 12px 22px; }
+
+      .footer{
+        font-size:0.75rem;
+        padding:6px 10px;
+      }
+    }
+
+    /* Kar taneleri */
+    .snowflake {
+      position: fixed;
+      top: -10px;
+      color: white;
+      font-size: 10px;
+      opacity: 0.8;
+      pointer-events: none;
+      animation: fall linear infinite;
+    }
+
+    @keyframes fall {
+      0% { transform: translateY(-10px); }
+      100% { transform: translateY(110vh); }
+    }
+  </style>
 </head>
+
 <body>
 
-<h1>🎉 Mutlu Yıllar 🎉</h1>
-<button id="startBtn" onclick="startShow()">Kutlamayı Başlat</button>
+  <h1>Mutlu Yıllar 2026!</h1>
+  <h2>MUTLU YILLAR EMLAK GRUBU</h2>
+  <p>2026 hepiniz için sağlık, mutluluk ve neşe getirsin</p>
 
-<audio id="music" src="https://cdn.pixabay.com/audio/2022/03/01/audio_11ac392cda.mp3" loop></audio>
+  <button onclick="startShow()">Kutlamayı Başlat 🎉</button>
 
-<script>
-  /* KAR YAĞIŞI */
-  function createSnow() {
-    const snow = document.createElement("div");
-    snow.classList.add("snowflake");
-    snow.innerHTML = "❆";
-    snow.style.left = Math.random() * window.innerWidth + "px";
-    snow.style.fontSize = (10 + Math.random() * 14) + "px";
-    snow.style.animationDuration = (4 + Math.random() * 6) + "s";
-    document.body.appendChild(snow);
+  <div class="footer">Bu sayfa: KEMALETTİN DUYAR tarafından hazırlanmıştır.</div>
 
-    setTimeout(() => snow.remove(), 10000);
-  }
-  setInterval(createSnow, 120);
+  <!-- SES DOSYALARI -->
+  <audio id="fireworkSound" src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_49709c8a31.mp3?filename=firework-1-113172.mp3"></audio>
+  <audio id="music" src="https://cdn.pixabay.com/download/audio/2023/12/07/audio_1760f0fa48.mp3?filename=new-year-piano-178365.mp3" loop></audio>
 
-  /* HAVAİ FİŞEK SESİ (Garantili çalışır) */
-  function playBoom() {
-    const boom = new Audio("https://cdn.pixabay.com/audio/2022/03/15/audio_404cf2e2ee.mp3");
-    boom.volume = 1.0;
-    boom.play().catch(() => {});
-  }
+  <script>
+    /* KAR YAĞIŞI */
+    function createSnow() {
+      const snow = document.createElement("div");
+      snow.classList.add("snowflake");
+      snow.innerHTML = "❆";
+      snow.style.left = Math.random() * window.innerWidth + "px";
+      snow.style.fontSize = (10 + Math.random() * 14) + "px";
+      snow.style.animationDuration = (4 + Math.random() * 6) + "s";
+      document.body.appendChild(snow);
 
-  /* Havai Fişek Efekti */
-  function explodeFirework(x, y) {
-    playBoom(); // SES BURADA ÇALIŞIYOR🔥
-
-    for (let i = 0; i < 30; i++) {
-      const dot = document.createElement("div");
-      dot.style.position = "absolute";
-      dot.style.width = "6px";
-      dot.style.height = "6px";
-      dot.style.borderRadius = "50%";
-      dot.style.background = ["#ff4d4d", "#ffd11a", "#66ff66", "#66b3ff"][Math.floor(Math.random()*4)];
-      dot.style.left = x + "px";
-      dot.style.top = y + "px";
-      dot.style.transition = "1s ease-out";
-      document.body.appendChild(dot);
-
-      const angle = Math.random() * 360;
-      const distance = 80 + Math.random() * 60;
-
-      setTimeout(() => {
-        dot.style.transform = `translate(${Math.cos(angle)*distance}px, ${Math.sin(angle)*distance}px)`;
-        dot.style.opacity = 0;
-      }, 20);
-
-      setTimeout(() => dot.remove(), 1200);
+      setTimeout(() => snow.remove(), 10000);
     }
-  }
 
-  /* GÖSTERİYİ BAŞLAT */
-  function startShow() {
-    const music = document.getElementById("music");
-    music.play().catch(() => {});
+    setInterval(createSnow, 120);
 
-    // 8 adet ardışık havai fişek
-    for (let i = 0; i < 8; i++) {
-      setTimeout(() => {
-        const x = Math.random() * window.innerWidth * 0.8 + window.innerWidth * 0.1;
-        const y = Math.random() * window.innerHeight * 0.5 + 100;
-        explodeFirework(x, y);
-      }, i * 900);
+    /* Havai Fişek Efekti */
+    function explodeFirework(x, y) {
+      for (let i = 0; i < 30; i++) {
+        const dot = document.createElement("div");
+        dot.style.position = "absolute";
+        dot.style.width = "6px";
+        dot.style.height = "6px";
+        dot.style.borderRadius = "50%";
+        dot.style.background = ["#ff4d4d", "#ffd11a", "#66ff66", "#66b3ff"][Math.floor(Math.random()*4)];
+        dot.style.left = x + "px";
+        dot.style.top = y + "px";
+        dot.style.transition = "1s ease-out";
+        document.body.appendChild(dot);
+
+        const angle = Math.random() * 360;
+        const distance = 80 + Math.random() * 60;
+
+        setTimeout(() => {
+          dot.style.transform = `translate(${Math.cos(angle)*distance}px, ${Math.sin(angle)*distance}px)`;
+          dot.style.opacity = 0;
+        }, 20);
+
+        setTimeout(() => dot.remove(), 1200);
+      }
     }
-  }
-</script>
+
+    function startShow() {
+      document.getElementById("music").play();
+      const sound = document.getElementById("fireworkSound");
+
+      for (let i = 0; i < 6; i++) {
+        setTimeout(() => {
+          const x = Math.random() * window.innerWidth * 0.8 + window.innerWidth * 0.1;
+          const y = Math.random() * window.innerHeight * 0.5 + 100;
+          explodeFirework(x, y);
+          sound.cloneNode(true).play();
+        }, i * 1000);
+      }
+    }
+  </script>
 
 </body>
 </html>
