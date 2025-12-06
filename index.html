@@ -1,209 +1,284 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-<meta charset="UTF-8">
-<title>Yeni Yıl Kutlaması</title>
-<style>
-  body {
-    margin: 0;
-    background: linear-gradient(#0b1a33, #020611);
-    overflow: hidden;
-    color: white;
-    font-family: Arial;
-    text-align: center;
-  }
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Mutlu Yıllar 2026 — Emlak Grubu</title>
 
-  #snowCanvas, #fireCanvas {
-    position: fixed;
-    top: 0; left: 0;
-    width: 100vw;
-    height: 100vh;
-    pointer-events: none;
-  }
+  <!-- 🔒 GÖRÜNMEYEN VERSİYON KONTROLÜ -->
+  <script>
+  (function(){
+    document.addEventListener("DOMContentLoaded", () => {
+      setTimeout(() => {
+        try {
+          const KEY = "page_v_final";
+          const url = new URL(window.location.href);
+          const v = url.searchParams.get("v");
+          const saved = sessionStorage.getItem(KEY);
 
-  .panel {
-    position: fixed;
-    top: 20px;
-    width: 100%;
-    text-align: center;
-    z-index: 10;
-  }
+          if (!v || v !== saved) {
+            const newV = Date.now().toString();
+            sessionStorage.setItem(KEY, newV);
+            const clean = window.location.origin + window.location.pathname;
+            window.location.href = clean + "?v=" + newV;
+          }
+        } catch (e) {}
+      }, 150);
+    });
+  })();
+  </script>
 
-  .panel button {
-    padding: 12px 20px;
-    margin: 5px;
-    font-size: 18px;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-  }
+  <style>
+    html,body{
+      height:100%;
+      margin:0;
+      background:radial-gradient(ellipse at bottom,#0f1720 0%,#020307 80%);
+      font-family:Arial,sans-serif;
+      color:#fff;
+      overflow:hidden;
+    }
 
-  #devInfo {
-    margin-top: 120px;
-    font-size: 16px;
-    opacity: 0.7;
-  }
-</style>
+    #snowCanvas,#fireworksCanvas{
+      position:fixed;left:0;top:0;width:100vw;height:100vh;
+      pointer-events:none;
+    }
+
+    .title-wrap{
+      position:fixed;top:35px;width:100%;text-align:center;z-index:30;
+    }
+
+    h1{
+      color:#ffd24c;margin:0;
+      text-shadow:0 0 12px #000;
+      font-size:2.2rem;
+    }
+    h2{
+      margin:6px 0 0;
+      color:#fff;opacity:.9;
+      font-size:1rem;
+      letter-spacing:1.5px;
+    }
+
+    /* 🎛 BUTON PANELİ – footer’dan uzaklaştırıldı */
+    .panel{
+      position:fixed;bottom:110px;
+      left:50%;transform:translateX(-50%);
+      display:flex;gap:10px;z-index:40;
+    }
+
+    button{
+      padding:10px 16px;
+      border-radius:10px;
+      border:none;
+      cursor:pointer;
+      background:#ffffff18;
+      color:#fff;
+      backdrop-filter:blur(4px);
+      border:1px solid #ffffff22;
+    }
+
+    .footer{
+      position:fixed;
+      bottom:20px;
+      left:50%;
+      transform:translateX(-50%);
+      background:#00000066;
+      padding:6px 14px;
+      border-radius:6px;
+      font-size:14px;
+      backdrop-filter:blur(4px);
+      z-index:35;
+    }
+  </style>
 </head>
 <body>
 
-<!-- ❄ Kar ve 🎆 Havai fişek -->
-<canvas id="snowCanvas"></canvas>
-<canvas id="fireCanvas"></canvas>
+<div class="title-wrap">
+  <h1>Mutlu Yıllar 2026 🎆</h1>
+  <h2>MUTLU YILLAR EMLAK GRUBU</h2>
+</div>
 
-<!-- 🟦 Üst Panel -->
+<canvas id="snowCanvas"></canvas>
+<canvas id="fireworksCanvas"></canvas>
+
+<!-- 📌 En alttaki yazı -->
+<div class="footer">Bu sayfa: Kemalettin Duyar tarafından hazırlanmıştır.</div>
+
 <div class="panel">
   <button id="soundBtn">🔇 Ses Kapalı</button>
   <button id="startBtn">🎆 Kutlamayı Başlat</button>
-
-  <div id="devInfo">
-    Bu sayfa: <b>Kemalettin Duyar</b> tarafından yapılmıştır.
-  </div>
 </div>
 
+<!-- 🔊 SES DOSYALARI -->
+<audio id="bgMusic" loop preload="auto"
+src="https://cdn.pixabay.com/download/audio/2022/03/01/audio_11ac392cda.mp3?filename=new-year-party-10980.mp3"></audio>
+
+<audio id="launchSnd" preload="auto"
+src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_63aebaa9d8.mp3?filename=launch-rocket-113177.mp3"></audio>
+
+<audio id="explodeSnd" preload="auto"
+src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_49709c8a31.mp3?filename=firework-1-113172.mp3"></audio>
+
 <script>
-/* -------------------------
-   🔵 Versiyon Kontrol (Gizli)
---------------------------*/
-(function(){
-  const version = "v5.0";
-  if (localStorage.getItem("currentVersion") !== version) {
-      localStorage.setItem("currentVersion", version);
-      location.reload();
-  }
-})();
+/* ========== CANVAS AYARLARI ========== */
+const snowCanvas=document.getElementById("snowCanvas");
+const snowCtx=snowCanvas.getContext("2d");
+const fwCanvas=document.getElementById("fireworksCanvas");
+const fwCtx=fwCanvas.getContext("2d");
 
-/* -------------------------
-   ❄ Kar Efekti
---------------------------*/
-const snow = document.getElementById("snowCanvas");
-const sctx = snow.getContext("2d");
-snow.width = innerWidth;
-snow.height = innerHeight;
+function resizeAll(){
+  snowCanvas.width=window.innerWidth;
+  snowCanvas.height=window.innerHeight;
+  fwCanvas.width=window.innerWidth;
+  fwCanvas.height=window.innerHeight;
+}
+resizeAll();
+window.addEventListener("resize",resizeAll);
 
-let flakes = [];
-for (let i = 0; i < 200; i++) {
+/* ========== KAR YAĞIŞI ========== */
+let flakes=[];
+for(let i=0;i<220;i++){
   flakes.push({
-    x: Math.random() * snow.width,
-    y: Math.random() * snow.height,
-    r: Math.random() * 3 + 1,
-    d: Math.random() + 1
+    x:Math.random()*window.innerWidth,
+    y:Math.random()*window.innerHeight,
+    r:1+Math.random()*4,
+    vx:(Math.random()-0.5)*0.5,
+    vy:1+Math.random()*2
   });
 }
 
-function drawSnow() {
-  sctx.clearRect(0, 0, snow.width, snow.height);
-  sctx.fillStyle = "white";
-  sctx.beginPath();
-  for (let f of flakes) {
-    sctx.moveTo(f.x, f.y);
-    sctx.arc(f.x, f.y, f.r, 0, Math.PI * 2);
+function drawSnow(){
+  snowCtx.clearRect(0,0,snowCanvas.width,snowCanvas.height);
+  snowCtx.fillStyle="rgba(255,255,255,0.9)";
+  snowCtx.beginPath();
+  for(const f of flakes){
+    snowCtx.moveTo(f.x,f.y);
+    snowCtx.arc(f.x,f.y,f.r,0,Math.PI*2);
   }
-  sctx.fill();
-  updateSnow();
-}
+  snowCtx.fill();
 
-function updateSnow() {
-  for (let f of flakes) {
-    f.y += f.d;
-    if (f.y > snow.height) f.y = 0;
+  for(const f of flakes){
+    f.x+=f.vx;
+    f.y+=f.vy;
+    f.x+=Math.sin(f.y/50)*0.3;
+
+    if(f.y>window.innerHeight+10){
+      f.y=-10;
+      f.x=Math.random()*window.innerWidth;
+    }
   }
 }
-setInterval(drawSnow, 30);
+setInterval(drawSnow,30);
 
-/* -------------------------
-   🎆 Havai Fişek
---------------------------*/
-const fire = document.getElementById("fireCanvas");
-const fctx = fire.getContext("2d");
-fire.width = innerWidth;
-fire.height = innerHeight;
+/* ========== HAVAİ FİŞEK ========== */
+let rockets=[],particles=[];
+let autoLaunch=null;
 
-let fireworks = [];
-
-function spawnFirework() {
-  let x = Math.random() * fire.width;
-  let y = fire.height + 10;
-  let targetY = Math.random() * fire.height * 0.4 + 100;
-
-  fireworks.push({
-    x, y,
-    targetY,
-    particles: []
+function launchRocket(){
+  rockets.push({
+    x:Math.random()*fwCanvas.width,
+    y:fwCanvas.height+10,
+    targetY:60+Math.random()*fwCanvas.height*0.5,
+    speed:6+Math.random()*3
   });
 }
 
-function updateFireworks() {
-  fctx.clearRect(0, 0, fire.width, fire.height);
+function explode(x,y){
+  const colors=["#ff4d4d","#ffd11a","#66ff66","#66b3ff","#ff66cc","#ffffff"];
+  for(let i=0;i<60;i++){
+    const a=Math.random()*Math.PI*2;
+    const s=2+Math.random()*4;
 
-  fireworks.forEach((fw, i) => {
-    if (fw.y > fw.targetY) {
-      fw.y -= 6;
-    } else {
-      if (fw.particles.length === 0) {
-        for (let p = 0; p < 40; p++) {
-          fw.particles.push({
-            x: fw.x,
-            y: fw.y,
-            vx: (Math.random() - 0.5) * 6,
-            vy: (Math.random() - 0.5) * 6,
-            alpha: 1
-          });
-        }
+    particles.push({
+      x,y,
+      vx:Math.cos(a)*s,
+      vy:Math.sin(a)*s,
+      life:60,
+      age:0,
+      color:colors[Math.floor(Math.random()*colors.length)]
+    });
+  }
+}
 
-        // 🔊 TARAYICI İÇİ BEEP (garanti çalışır)
-        if (soundEnabled) playBeep();
+function drawFW(){
+  fwCtx.clearRect(0,0,fwCanvas.width,fwCanvas.height);
+
+  for(let i=rockets.length-1;i>=0;i--){
+    const r=rockets[i];
+    r.y-=r.speed;
+    fwCtx.fillStyle="#fff";
+    fwCtx.fillRect(r.x,r.y,3,8);
+
+    if(r.y<=r.targetY){
+      explode(r.x,r.y);
+      rockets.splice(i,1);
+
+      if(soundEnabled){
+        explodeSnd.currentTime=0;
+        explodeSnd.play().catch(()=>{});
       }
-
-      fw.particles.forEach(p => {
-        p.x += p.vx;
-        p.y += p.vy;
-        p.alpha -= 0.015;
-      });
-
-      fw.particles = fw.particles.filter(p => p.alpha > 0);
     }
+  }
 
-    if (fw.particles.length === 0 && fw.y <= fw.targetY - 10) {
-      fireworks.splice(i, 1);
-    }
-  });
+  for(let i=particles.length-1;i>=0;i--){
+    const p=particles[i];
+    p.vy+=0.03;
+    p.x+=p.vx;
+    p.y+=p.vy;
+    p.age++;
 
-  requestAnimationFrame(updateFireworks);
+    let a=1-p.age/p.life;
+    if(a<0) a=0;
+
+    fwCtx.fillStyle=`rgba(255,255,255,${a})`;
+    fwCtx.fillRect(p.x,p.y,2,2);
+
+    if(p.age>=p.life) particles.splice(i,1);
+  }
+
+  requestAnimationFrame(drawFW);
 }
-updateFireworks();
+drawFW();
 
-/* -------------------------
-   🔊 Ses Fonksiyonu (BEŞİKTAŞ GİBİ GARANTİ)
---------------------------*/
-function playBeep() {
-  const ctx = new (window.AudioContext || window.webkitAudioContext)();
-  const osc = ctx.createOscillator();
-  osc.type = "square";
-  osc.frequency.value = 300;
-  osc.connect(ctx.destination);
-  osc.start();
-  setTimeout(() => osc.stop(), 150);
+/* ========== SES KONTROLÜ — %100 ÇALIŞIR ========== */
+let soundEnabled=false;
+const bgMusic=document.getElementById("bgMusic");
+const soundBtn=document.getElementById("soundBtn");
+
+function toggleSound(){
+  soundEnabled=!soundEnabled;
+  soundBtn.innerText=soundEnabled?"🔊 Ses Açık":"🔇 Ses Kapalı";
+
+  if(soundEnabled){
+    bgMusic.currentTime=0;
+
+    bgMusic.play().catch(err=>{
+      console.log("Müzik engellendi:",err);
+    });
+
+    launchSnd.play().catch(()=>{});
+    explodeSnd.play().catch(()=>{});
+  } else {
+    bgMusic.pause();
+  }
 }
 
-/* -------------------------
-   🟢 Butonlar
---------------------------*/
-let soundEnabled = false;
+/* ========== KUTLAMAYI BAŞLAT ========== */
+document.getElementById("startBtn").addEventListener("click",()=>{
+  if(soundEnabled){
+    launchSnd.currentTime=0;
+    launchSnd.play().catch(()=>{});
+  }
 
-document.getElementById("soundBtn").onclick = () => {
-  soundEnabled = !soundEnabled;
+  launchRocket();
 
-  document.getElementById("soundBtn").innerText =
-    soundEnabled ? "🔊 Ses Açık" : "🔇 Ses Kapalı";
+  if(!autoLaunch){
+    autoLaunch=setInterval(launchRocket,700);
+  }
+});
 
-  // Tarayıcıdan ilk ses izni
-  if (soundEnabled) playBeep();
-};
-
-document.getElementById("startBtn").onclick = () => {
-  setInterval(spawnFirework, 700);
-};
+soundBtn.addEventListener("click",toggleSound);
 </script>
+
 </body>
 </html>
