@@ -97,7 +97,7 @@
 <body>
 
   <h1>Mutlu Yıllar 2026 🎆</h1>
-  <h2>MUTLU YILLAR EMLAK GRUBU-2</h2>
+  <h2>MUTLU YILLAR EMLAK GRUBU-3</h2>
 
   <div class="desc">
     2026 hepiniz için sağlık, mutluluk ve neşe getirsin.  
@@ -225,5 +225,25 @@
       }
     };
   </script>
+  
+<script>
+  // Otomatik version numarası üretir (her sayfa yüklemede güncel)
+  const version = Date.now();
+
+  // Sayfadaki tüm CSS ve JS dosyalarını bul
+  document.querySelectorAll('link[rel="stylesheet"], script[src]').forEach(el => {
+    const attr = el.tagName === "LINK" ? "href" : "src";
+    const url = el.getAttribute(attr);
+
+    if (!url) return;
+
+    // Zaten version varsa kaldır
+    const cleanUrl = url.split("?")[0];
+
+    // Version parametresi ekle
+    el.setAttribute(attr, cleanUrl + "?v=" + version);
+  });
+</script>
+  
 </body>
 </html>
