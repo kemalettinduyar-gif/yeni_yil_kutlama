@@ -47,27 +47,26 @@
 </head>
 <body>
 
+<!-- ❄ Kar ve 🎆 Havai fişek -->
 <canvas id="snowCanvas"></canvas>
 <canvas id="fireCanvas"></canvas>
 
+<!-- 🟦 Üst Panel -->
 <div class="panel">
   <button id="soundBtn">🔇 Ses Kapalı</button>
   <button id="startBtn">🎆 Kutlamayı Başlat</button>
 
-  <div id="devInfo">Bu sayfa: <b>Kemalettin Duyar</b> tarafından yapılmıştır.</div>
+  <div id="devInfo">
+    Bu sayfa: <b>Kemalettin Duyar</b> tarafından yapılmıştır.
+  </div>
 </div>
-
-<!-- 🔊 Base64 gömülü patlama sesi (100% çalışır) -->
-<audio id="fx" preload="auto">
-  <source src="data:audio/mp3;base64,//uQxAAAAAAAAAAAAAAAAAAAAAAASW5mbwAAAA8AAAACAAACcQCA..." type="audio/mp3">
-</audio>
 
 <script>
 /* -------------------------
    🔵 Versiyon Kontrol (Gizli)
 --------------------------*/
 (function(){
-  const version = "v4.0";
+  const version = "v5.0";
   if (localStorage.getItem("currentVersion") !== version) {
       localStorage.setItem("currentVersion", version);
       location.reload();
@@ -152,10 +151,8 @@ function updateFireworks() {
           });
         }
 
-        // 🔊 Ses Çal (KESİN ÇALIŞIR)
-        const fx = document.getElementById("fx");
-        fx.currentTime = 0;
-        fx.play();
+        // 🔊 TARAYICI İÇİ BEEP (garanti çalışır)
+        if (soundEnabled) playBeep();
       }
 
       fw.particles.forEach(p => {
@@ -177,21 +174,31 @@ function updateFireworks() {
 updateFireworks();
 
 /* -------------------------
+   🔊 Ses Fonksiyonu (BEŞİKTAŞ GİBİ GARANTİ)
+--------------------------*/
+function playBeep() {
+  const ctx = new (window.AudioContext || window.webkitAudioContext)();
+  const osc = ctx.createOscillator();
+  osc.type = "square";
+  osc.frequency.value = 300;
+  osc.connect(ctx.destination);
+  osc.start();
+  setTimeout(() => osc.stop(), 150);
+}
+
+/* -------------------------
    🟢 Butonlar
 --------------------------*/
 let soundEnabled = false;
-const fx = document.getElementById("fx");
 
 document.getElementById("soundBtn").onclick = () => {
   soundEnabled = !soundEnabled;
-  fx.muted = !soundEnabled;
+
   document.getElementById("soundBtn").innerText =
     soundEnabled ? "🔊 Ses Açık" : "🔇 Ses Kapalı";
 
-  // ilk kez açınca izin almak için kısa oynatma
-  if (soundEnabled) {
-    fx.play().catch(()=>{});
-  }
+  // Tarayıcıdan ilk ses izni
+  if (soundEnabled) playBeep();
 };
 
 document.getElementById("startBtn").onclick = () => {
