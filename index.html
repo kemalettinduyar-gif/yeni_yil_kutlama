@@ -1,376 +1,226 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Mutlu Yıllar 2026 — Emlak Grubu</title>
-
-  <!-- GİZLİ VERSİYON KONTROLÜ (görünmez, DOM hazır sonrası kısa gecikme) -->
-  <script>
-  (function(){
-    document.addEventListener("DOMContentLoaded", () => {
-      setTimeout(() => {
-        try {
-          const KEY = "page_v_final";
-          const url = new URL(window.location.href);
-          const v = url.searchParams.get("v");
-          const saved = sessionStorage.getItem(KEY);
-          if (!v || v !== saved) {
-            const newV = Date.now().toString();
-            sessionStorage.setItem(KEY, newV);
-            const clean = window.location.origin + window.location.pathname;
-            window.location.href = clean + "?v=" + newV;
-          }
-        } catch(e){/* silent */ }
-      }, 400);
-    });
-  })();
-  </script>
-
-  <style>
-    html,body{
-      height:100%;
-      margin:0;
-      background: radial-gradient(ellipse at bottom, #0f1720 0%, #020307 80%);
-      font-family: Arial, Helvetica, sans-serif;
-      color: #fff;
-      overflow: hidden;
+<meta charset="UTF-8">
+<title>Yeni Yıl Kutlaması — Final Sürüm</title>
+<style>
+    body {
+        margin: 0;
+        overflow: hidden;
+        background: linear-gradient(#001, #034);
+        color: white;
+        font-family: Arial;
+        user-select: none;
     }
 
-    #snowCanvas,#fireworksCanvas{
-      position: fixed;
-      left:0; top:0;
-      width:100vw; height:100vh;
-      pointer-events: none;
-      z-index: 10;
+    .panel {
+        position: fixed;
+        top: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        display: flex;
+        gap: 10px;
+        z-index: 50;
     }
 
-    .title-wrap{
-      position: fixed; top:28px; width:100%; text-align:center; z-index:60; pointer-events: none;
+    .footer {
+        position: fixed;
+        bottom: 10px;
+        width: 100%;
+        text-align: center;
+        color: #ccc;
+        font-size: 14px;
+        z-index: 50;
     }
-    h1{ color:#ffd24c; margin:0; font-size:2.1rem; text-shadow:0 0 12px #000; }
-    h2{ margin:6px 0 0; font-size:1rem; opacity:.95; letter-spacing:1.2px; }
-
-    .panel{
-      position: fixed;
-      bottom: 110px;
-      left: 50%;
-      transform: translateX(-50%);
-      display:flex;
-      gap:10px;
-      z-index:70;
-    }
-    .panel button{
-      padding:10px 16px;
-      border-radius:10px;
-      border:none;
-      cursor:pointer;
-      background: rgba(255,255,255,0.12);
-      color:#fff;
-      backdrop-filter: blur(4px);
-      border:1px solid rgba(255,255,255,0.14);
-      font-size:15px;
-    }
-
-    .footer{
-      position: fixed;
-      bottom: 18px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: rgba(0,0,0,0.45);
-      padding: 8px 14px;
-      border-radius: 8px;
-      font-size:14px;
-      z-index:70;
-      white-space: nowrap;
-    }
-
-    @media (max-width:480px){
-      .panel{ bottom:140px; flex-direction:column; }
-      .panel button{ width:160px; }
-      h1{ font-size:1.6rem; }
-    }
-  </style>
+</style>
 </head>
 <body>
 
-  <div class="title-wrap">
-    <h1>Mutlu Yıllar 2026 🎆</h1>
-    <h2>MUTLU YILLAR EMLAK GRUBU</h2>
-  </div>
+<canvas id="canvas"></canvas>
 
-  <canvas id="snowCanvas"></canvas>
-  <canvas id="fireworksCanvas"></canvas>
-
-  <div class="panel" role="region" aria-label="Kontroller">
-    <button id="soundBtn" aria-pressed="false">🔇 Ses Kapalı</button>
+<div class="panel">
+    <button id="soundBtn">🔇 Ses Kapalı</button>
     <button id="startBtn">🎆 Kutlamayı Başlat</button>
-  </div>
+</div>
 
-  <div class="footer">Bu sayfa: Kemalettin Duyar tarafından hazırlanmıştır.</div>
+<div class="footer">Bu sayfa: Kemalettin Duyar tarafından yapılmıştır.</div>
+
+<!-- Gizli versiyon kontrol -->
+<div id="ver" style="display:none">v4.0.1</div>
 
 <script>
-/* -------------------- Canvas setup -------------------- */
-const snowCanvas = document.getElementById('snowCanvas');
-const snowCtx = snowCanvas.getContext('2d');
-const fwCanvas = document.getElementById('fireworksCanvas');
-const fwCtx = fwCanvas.getContext('2d');
+/* =============== CANVAS AYARLARI =============== */
+const canvas = document.getElementById("canvas");
+const c = canvas.getContext("2d");
+function resize(){ canvas.width = innerWidth; canvas.height = innerHeight; }
+resize();
+window.onresize = resize;
 
-function resizeAll(){
-  snowCanvas.width = window.innerWidth;
-  snowCanvas.height = window.innerHeight;
-  fwCanvas.width = window.innerWidth;
-  fwCanvas.height = window.innerHeight;
-}
-window.addEventListener('resize', resizeAll);
-resizeAll();
-
-/* -------------------- Snow -------------------- */
-let flakes = [];
-function initFlakes(n=260){
-  flakes = [];
-  for(let i=0;i<n;i++){
-    flakes.push({
-      x: Math.random()*window.innerWidth,
-      y: Math.random()*window.innerHeight,
-      r: 1 + Math.random()*4,
-      vx: (Math.random()-0.5)*0.6,
-      vy: 1 + Math.random()*2
+/* =============== KAR YAĞIŞI =============== */
+let snowflakes = [];
+for (let i = 0; i < 200; i++) {
+    snowflakes.push({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        r: Math.random() * 3 + 1,
+        s: Math.random() * 1 + 0.5
     });
-  }
-}
-initFlakes();
-
-function drawSnow(){
-  snowCtx.clearRect(0,0,snowCanvas.width,snowCanvas.height);
-  snowCtx.fillStyle = "rgba(255,255,255,0.95)";
-  snowCtx.beginPath();
-  for(const f of flakes){
-    snowCtx.moveTo(f.x,f.y);
-    snowCtx.arc(f.x,f.y,f.r,0,Math.PI*2);
-  }
-  snowCtx.fill();
-  for(const f of flakes){
-    f.x += f.vx + Math.sin(f.y/60)*0.35;
-    f.y += f.vy;
-    if(f.y > window.innerHeight+10){
-      f.y = -10; f.x = Math.random()*window.innerWidth;
-    }
-    if(f.x < -20) f.x = window.innerWidth + 20;
-    if(f.x > window.innerWidth + 20) f.x = -20;
-  }
-  requestAnimationFrame(drawSnow);
-}
-requestAnimationFrame(drawSnow);
-
-/* -------------------- Fireworks -------------------- */
-let rockets = [], particles = [], autoLaunch = null;
-
-function launchRocket(){
-  const r = {
-    x: Math.random()*fwCanvas.width,
-    y: fwCanvas.height + 10,
-    targetY: 60 + Math.random()*(fwCanvas.height*0.45),
-    speed: 6 + Math.random()*3
-  };
-  rockets.push(r);
-
-  // play launch sound if enabled
-  if(soundEnabled) playLaunchSound();
 }
 
-function explode(x,y){
-  const colors = ["#ff4d4d","#ffd11a","#66ff66","#66b3ff","#ff66cc","#ffffff"];
-  const count = 45 + Math.floor(Math.random()*40);
-  for(let i=0;i<count;i++){
-    const ang = Math.random()*Math.PI*2;
-    const speed = 1.5 + Math.random()*4.5;
-    particles.push({
-      x, y,
-      vx: Math.cos(ang)*speed,
-      vy: Math.sin(ang)*speed,
-      age: 0,
-      life: 60 + Math.random()*50,
-      color: colors[Math.floor(Math.random()*colors.length)]
+/* =============== HAVAİ FİŞEKLER =============== */
+let fireworks = [];
+
+function spawnFirework() {
+    let x = Math.random() * canvas.width;
+    let y = canvas.height + 20;
+    let tx = x;
+    let ty = Math.random() * (canvas.height / 2);
+
+    fireworks.push({
+        x, y, tx, ty,
+        particles: [],
+        exploded: false
     });
-  }
-
-  if(soundEnabled) playExplosionSound();
 }
 
-function drawFW(){
-  fwCtx.clearRect(0,0,fwCanvas.width,fwCanvas.height);
-
-  for(let i=rockets.length-1;i>=0;i--){
-    const r = rockets[i];
-    r.y -= r.speed;
-    fwCtx.fillStyle = "#fff";
-    fwCtx.fillRect(r.x, r.y, 3, 8);
-
-    if(r.y <= r.targetY){
-      explode(r.x, r.y);
-      rockets.splice(i,1);
-    }
-  }
-
-  for(let i=particles.length-1;i>=0;i--){
-    const p = particles[i];
-    p.vy += 0.03;
-    p.x += p.vx;
-    p.y += p.vy;
-    p.age++;
-    const a = Math.max(0, 1 - p.age / p.life);
-    fwCtx.fillStyle = hexToRgba(p.color, a);
-    fwCtx.fillRect(p.x, p.y, 2, 2);
-    if(p.age >= p.life) particles.splice(i,1);
-  }
-
-  requestAnimationFrame(drawFW);
-}
-requestAnimationFrame(drawFW);
-
-function hexToRgba(hex, a){
-  const c = hex.replace('#','');
-  const r = parseInt(c.substr(0,2),16);
-  const g = parseInt(c.substr(2,2),16);
-  const b = parseInt(c.substr(4,2),16);
-  return `rgba(${r},${g},${b},${a})`;
-}
-
-/* -------------------- Web Audio (effects only) -------------------- */
-let audioCtx = null;
+/* =============== SES MOTORU =============== */
+let ctx = null;
+let globalMusicGain = null;
 let soundEnabled = false;
 
-// create AudioContext on first user gesture
-function ensureAudioContext(){
-  if(!audioCtx){
-    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-  }
+function initAudio() {
+    if (!ctx) {
+        ctx = new (window.AudioContext || window.webkitAudioContext)();
+
+        /* Hafif yılbaşı müziği — sürekli ambient */
+        const osc1 = ctx.createOscillator();
+        const osc2 = ctx.createOscillator();
+        const gain1 = ctx.createGain();
+        const gain2 = ctx.createGain();
+        globalMusicGain = ctx.createGain();
+
+        osc1.type = "sine"; 
+        osc1.frequency.value = 320;   // temel nota
+        gain1.gain.value = 0.08;
+
+        osc2.type = "triangle";
+        osc2.frequency.value = 480;  // üst armonik
+        gain2.gain.value = 0.05;
+
+        globalMusicGain.gain.value = 0; // başta sessiz
+
+        osc1.connect(gain1).connect(globalMusicGain).connect(ctx.destination);
+        osc2.connect(gain2).connect(globalMusicGain).connect(ctx.destination);
+
+        osc1.start();
+        osc2.start();
+    }
 }
 
-/* ----- Launch (woosh) sound ----- */
-function playLaunchSound(){
-  try {
-    ensureAudioContext();
-    const ctx = audioCtx;
-    const now = ctx.currentTime;
+/* =============== PATLAMA SESİ (WHITE NOISE) =============== */
+function playExplosionSound() {
+    if (!soundEnabled || !ctx) return;
 
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
+    const bufferSize = ctx.sampleRate * 0.4;
+    const noiseBuffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+    const output = noiseBuffer.getChannelData(0);
 
-    osc.type = 'sawtooth';
-    osc.frequency.setValueAtTime(180, now);
-    osc.frequency.exponentialRampToValueAtTime(900, now + 0.18);
-
-    gain.gain.setValueAtTime(0, now);
-    gain.gain.linearRampToValueAtTime(0.25, now + 0.02);
-    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
-
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-
-    osc.start(now);
-    osc.stop(now + 0.26);
-  } catch(e){}
-}
-
-/* ----- Explosion (noise) ----- */
-function playExplosionSound(){
-  try {
-    ensureAudioContext();
-    const ctx = audioCtx;
-    const now = ctx.currentTime;
-
-    // create noise buffer
-    const bufferSize = ctx.sampleRate * 0.4; // 0.4s
-    const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
-    const data = buffer.getChannelData(0);
-    for(let i=0;i<bufferSize;i++){
-      data[i] = (Math.random()*2-1) * Math.pow(1 - i/bufferSize, 3); // decay envelope in buffer
+    for (let i = 0; i < bufferSize; i++) {
+        output[i] = Math.random() * 2 - 1;
     }
 
     const noise = ctx.createBufferSource();
-    noise.buffer = buffer;
+    noise.buffer = noiseBuffer;
 
-    const bandpass = ctx.createBiquadFilter();
-    bandpass.type = 'bandpass';
-    bandpass.frequency.value = 1200;
-    bandpass.Q.value = 0.7;
+    const gainNode = ctx.createGain();
+    gainNode.gain.setValueAtTime(1, ctx.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.4);
 
-    const gain = ctx.createGain();
-    gain.gain.setValueAtTime(0.6, now);
-    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.45);
-
-    // low rumble
-    const rumble = ctx.createOscillator();
-    rumble.type = 'sine';
-    rumble.frequency.value = 80;
-    const rumbleGain = ctx.createGain();
-    rumbleGain.gain.setValueAtTime(0.35, now);
-    rumbleGain.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
-
-    noise.connect(bandpass);
-    bandpass.connect(gain);
-    gain.connect(ctx.destination);
-
-    rumble.connect(rumbleGain);
-    rumbleGain.connect(ctx.destination);
-
-    noise.start(now);
-    noise.stop(now + 0.45);
-
-    rumble.start(now);
-    rumble.stop(now + 0.45);
-  } catch(e){}
+    noise.connect(gainNode).connect(ctx.destination);
+    noise.start();
 }
 
-/* unlock trick: play+pause small sound in user gesture to unlock browser */
-function unlockAudioIfNeeded(){
-  try {
-    ensureAudioContext();
-    // small silent oscillator to unlock
-    const ctx = audioCtx;
-    const osc = ctx.createOscillator();
-    const g = ctx.createGain();
-    g.gain.value = 0.00001;
-    osc.connect(g); g.connect(ctx.destination);
-    osc.start();
-    setTimeout(()=>{ try { osc.stop(); } catch(e){} }, 50);
-  } catch(e){}
+/* =============== ANİMASYON DÖNGÜSÜ =============== */
+function animate() {
+    requestAnimationFrame(animate);
+    c.clearRect(0, 0, canvas.width, canvas.height);
+
+    // --- KAR ---
+    for (let s of snowflakes) {
+        c.beginPath();
+        c.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+        c.fillStyle = "white";
+        c.fill();
+        s.y += s.s;
+        if (s.y > canvas.height) {
+            s.y = -5;
+            s.x = Math.random() * canvas.width;
+        }
+    }
+
+    // --- FİŞEK ---
+    fireworks.forEach(f => {
+        if (!f.exploded) {
+            f.y -= 7;
+
+            c.beginPath();
+            c.fillStyle = "yellow";
+            c.arc(f.x, f.y, 4, 0, Math.PI * 2);
+            c.fill();
+
+            if (f.y <= f.ty) {
+                f.exploded = true;
+                playExplosionSound();
+
+                for (let i = 0; i < 35; i++) {
+                    const angle = Math.random() * Math.PI * 2;
+                    const speed = Math.random() * 4 + 2;
+
+                    f.particles.push({
+                        x: f.x,
+                        y: f.y,
+                        vx: Math.cos(angle) * speed,
+                        vy: Math.sin(angle) * speed,
+                        alpha: 1
+                    });
+                }
+            }
+
+        } else {
+            f.particles.forEach(p => {
+                p.x += p.vx;
+                p.y += p.vy;
+                p.alpha -= 0.02;
+
+                c.fillStyle = `rgba(255,150,50,${p.alpha})`;
+                c.beginPath();
+                c.arc(p.x, p.y, 3, 0, Math.PI * 2);
+                c.fill();
+            });
+        }
+    });
+
+    fireworks = fireworks.filter(f => f.particles.length === 0 || f.particles.some(p => p.alpha > 0));
 }
+animate();
 
-/* -------------------- Controls -------------------- */
-const soundBtn = document.getElementById('soundBtn');
-const startBtn = document.getElementById('startBtn');
+/* =============== BUTONLAR =============== */
+document.getElementById("soundBtn").onclick = () => {
+    initAudio();
+    soundEnabled = !soundEnabled;
+    if (soundEnabled) {
+        globalMusicGain.gain.setValueAtTime(0.15, ctx.currentTime);
+        document.getElementById("soundBtn").innerText = "🔊 Ses Açık";
+    } else {
+        globalMusicGain.gain.setValueAtTime(0, ctx.currentTime);
+        document.getElementById("soundBtn").innerText = "🔇 Ses Kapalı";
+    }
+};
 
-soundBtn.addEventListener('click', () => {
-  // user gesture
-  unlockAudioIfNeeded();
-  soundEnabled = !soundEnabled;
-  soundBtn.innerText = soundEnabled ? '🔊 Ses Açık' : '🔇 Ses Kapalı';
-  soundBtn.setAttribute('aria-pressed', String(soundEnabled));
-});
-
-startBtn.addEventListener('click', () => {
-  // user gesture
-  unlockAudioIfNeeded();
-
-  // play immediate feedback launch sound if enabled
-  if(soundEnabled) playLaunchSound();
-
-  if(!autoLaunch){
-    autoLaunch = setInterval(launchRocket, 650);
-  }
-  // launch a couple immediately for feedback
-  launchRocket(); launchRocket();
-});
-
-/* also unlock on first pointerdown anywhere to be safe */
-window.addEventListener('pointerdown', function firstUnlock(){
-  unlockAudioIfNeeded();
-  window.removeEventListener('pointerdown', firstUnlock);
-}, { once:true, passive:true });
-
+document.getElementById("startBtn").onclick = () => {
+    initAudio();
+    setInterval(spawnFirework, 600);
+};
 </script>
 </body>
 </html>
