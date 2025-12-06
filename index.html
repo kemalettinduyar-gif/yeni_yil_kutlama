@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Mutlu Yıllar 2026 — Emlak Grubu</title>
 
-  <!-- GÖRÜNMEYEN VERSİYON KONTROLÜ (DOM hazır olduktan sonra kısa gecikmeyle) -->
+  <!-- GİZLİ VERSİYON KONTROLÜ (görünmez, DOM hazır sonrası kısa gecikme) -->
   <script>
   (function(){
     document.addEventListener("DOMContentLoaded", () => {
@@ -19,14 +19,10 @@
             const newV = Date.now().toString();
             sessionStorage.setItem(KEY, newV);
             const clean = window.location.origin + window.location.pathname;
-            // href ile yönlendir: sadece farklıysa yönlendirir (döngü yaratmaz)
             window.location.href = clean + "?v=" + newV;
           }
-        } catch (e) {
-          // sessizce devam et
-          console.warn("version check failed", e);
-        }
-      }, 500); // 500ms: efektlerin kurulması için güvenli bekleme
+        } catch(e){/* silent */ }
+      }, 400);
     });
   })();
   </script>
@@ -35,72 +31,64 @@
     html,body{
       height:100%;
       margin:0;
-      background:radial-gradient(ellipse at bottom,#0f1720 0%,#020307 80%);
-      font-family:Arial,Helvetica,sans-serif;
-      color:#fff;
-      overflow:hidden;
+      background: radial-gradient(ellipse at bottom, #0f1720 0%, #020307 80%);
+      font-family: Arial, Helvetica, sans-serif;
+      color: #fff;
+      overflow: hidden;
     }
 
-    /* Canvases */
     #snowCanvas,#fireworksCanvas{
-      position:fixed;
+      position: fixed;
       left:0; top:0;
       width:100vw; height:100vh;
-      pointer-events:none;
-      z-index:10;
+      pointer-events: none;
+      z-index: 10;
     }
 
-    /* Başlık */
     .title-wrap{
-      position:fixed;
-      top:28px;
-      width:100%;
-      text-align:center;
-      z-index:50;
-      pointer-events:none;
+      position: fixed; top:28px; width:100%; text-align:center; z-index:60; pointer-events: none;
     }
-    h1{color:#ffd24c;margin:0;font-size:2.1rem;text-shadow:0 0 12px #000}
-    h2{margin:6px 0 0;color:#fff;opacity:.9;font-size:1rem;letter-spacing:1.5px}
+    h1{ color:#ffd24c; margin:0; font-size:2.1rem; text-shadow:0 0 12px #000; }
+    h2{ margin:6px 0 0; font-size:1rem; opacity:.95; letter-spacing:1.2px; }
 
-    /* Panel (butonlar) - footer ile çakışmasın diye yukarıda */
     .panel{
-      position:fixed;
-      bottom:110px;
-      left:50%;
-      transform:translateX(-50%);
+      position: fixed;
+      bottom: 110px;
+      left: 50%;
+      transform: translateX(-50%);
       display:flex;
       gap:10px;
-      z-index:60;
+      z-index:70;
     }
     .panel button{
       padding:10px 16px;
       border-radius:10px;
       border:none;
       cursor:pointer;
-      background:rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.12);
       color:#fff;
-      backdrop-filter:blur(4px);
+      backdrop-filter: blur(4px);
       border:1px solid rgba(255,255,255,0.14);
       font-size:15px;
     }
 
-    /* Footer en altta tek satır halinde */
     .footer{
-      position:fixed;
-      bottom:18px;
-      left:50%;
-      transform:translateX(-50%);
-      background:rgba(0,0,0,0.45);
-      padding:8px 14px;
-      border-radius:8px;
+      position: fixed;
+      bottom: 18px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0,0,0,0.45);
+      padding: 8px 14px;
+      border-radius: 8px;
       font-size:14px;
-      z-index:60;
-      white-space:nowrap;
+      z-index:70;
+      white-space: nowrap;
     }
 
     @media (max-width:480px){
-      .panel{ bottom:140px; }
-      h1{font-size:1.6rem}
+      .panel{ bottom:140px; flex-direction:column; }
+      .panel button{ width:160px; }
+      h1{ font-size:1.6rem; }
     }
   </style>
 </head>
@@ -114,31 +102,19 @@
   <canvas id="snowCanvas"></canvas>
   <canvas id="fireworksCanvas"></canvas>
 
-  <div class="panel" aria-hidden="false">
-    <button id="soundBtn">🔇 Ses Kapalı</button>
+  <div class="panel" role="region" aria-label="Kontroller">
+    <button id="soundBtn" aria-pressed="false">🔇 Ses Kapalı</button>
     <button id="startBtn">🎆 Kutlamayı Başlat</button>
   </div>
 
   <div class="footer">Bu sayfa: Kemalettin Duyar tarafından hazırlanmıştır.</div>
 
-  <!-- Güvenilir, CORS/MIME uyumlu ses kaynakları (HTTPS) -->
-  <audio id="bgMusic" loop preload="auto"
-    src="https://files.freemusicarchive.org/storage-freemusicarchive-org/music/no_curator/Scott_Holmes_Music/Happy_Music/Scott_Holmes_Music_-_Happy_Music.mp3"></audio>
-
-  <audio id="launchSnd" preload="auto"
-    src="https://actions.google.com/sounds/v1/impacts/medium_impact.ogg"></audio>
-
-  <audio id="explodeSnd" preload="auto"
-    src="https://actions.google.com/sounds/v1/fireworks/fireworks_whistle_bang.ogg"></audio>
-
 <script>
-/* =====================================================
-   Canvas boyutlandırma + util
-===================================================== */
-const snowCanvas = document.getElementById("snowCanvas");
-const snowCtx = snowCanvas.getContext("2d");
-const fwCanvas = document.getElementById("fireworksCanvas");
-const fwCtx = fwCanvas.getContext("2d");
+/* -------------------- Canvas setup -------------------- */
+const snowCanvas = document.getElementById('snowCanvas');
+const snowCtx = snowCanvas.getContext('2d');
+const fwCanvas = document.getElementById('fireworksCanvas');
+const fwCtx = fwCanvas.getContext('2d');
 
 function resizeAll(){
   snowCanvas.width = window.innerWidth;
@@ -146,19 +122,17 @@ function resizeAll(){
   fwCanvas.width = window.innerWidth;
   fwCanvas.height = window.innerHeight;
 }
-window.addEventListener("resize", resizeAll);
+window.addEventListener('resize', resizeAll);
 resizeAll();
 
-/* =====================================================
-   KAR YAĞIŞI (requestAnimationFrame ile düzgün)
-===================================================== */
+/* -------------------- Snow -------------------- */
 let flakes = [];
-function initFlakes(count = 260){
+function initFlakes(n=260){
   flakes = [];
-  for(let i=0;i<count;i++){
+  for(let i=0;i<n;i++){
     flakes.push({
-      x: Math.random() * window.innerWidth,
-      y: Math.random() * window.innerHeight,
+      x: Math.random()*window.innerWidth,
+      y: Math.random()*window.innerHeight,
       r: 1 + Math.random()*4,
       vx: (Math.random()-0.5)*0.6,
       vy: 1 + Math.random()*2
@@ -172,17 +146,15 @@ function drawSnow(){
   snowCtx.fillStyle = "rgba(255,255,255,0.95)";
   snowCtx.beginPath();
   for(const f of flakes){
-    snowCtx.moveTo(f.x, f.y);
-    snowCtx.arc(f.x, f.y, f.r, 0, Math.PI*2);
+    snowCtx.moveTo(f.x,f.y);
+    snowCtx.arc(f.x,f.y,f.r,0,Math.PI*2);
   }
   snowCtx.fill();
-
   for(const f of flakes){
-    f.x += f.vx + Math.sin(f.y/60) * 0.35;
+    f.x += f.vx + Math.sin(f.y/60)*0.35;
     f.y += f.vy;
-    if(f.y > window.innerHeight + 10){
-      f.y = -10;
-      f.x = Math.random() * window.innerWidth;
+    if(f.y > window.innerHeight+10){
+      f.y = -10; f.x = Math.random()*window.innerWidth;
     }
     if(f.x < -20) f.x = window.innerWidth + 20;
     if(f.x > window.innerWidth + 20) f.x = -20;
@@ -191,50 +163,45 @@ function drawSnow(){
 }
 requestAnimationFrame(drawSnow);
 
-/* =====================================================
-   HAVAİ FİŞEKLER (rokets -> parçacıklar)
-===================================================== */
-let rockets = [];
-let particles = [];
-let autoLaunchId = null;
+/* -------------------- Fireworks -------------------- */
+let rockets = [], particles = [], autoLaunch = null;
 
 function launchRocket(){
-  rockets.push({
-    x: Math.random() * fwCanvas.width,
-    y: fwCanvas.height + 20,
-    targetY: 80 + Math.random() * (fwCanvas.height * 0.45),
-    speed: 6 + Math.random() * 3
-  });
+  const r = {
+    x: Math.random()*fwCanvas.width,
+    y: fwCanvas.height + 10,
+    targetY: 60 + Math.random()*(fwCanvas.height*0.45),
+    speed: 6 + Math.random()*3
+  };
+  rockets.push(r);
 
-  // fırlatma sesi anlık (kısa)
-  try { launchSnd.currentTime = 0; launchSnd.play().catch(()=>{}); } catch(e){}
+  // play launch sound if enabled
+  if(soundEnabled) playLaunchSound();
 }
 
 function explode(x,y){
   const colors = ["#ff4d4d","#ffd11a","#66ff66","#66b3ff","#ff66cc","#ffffff"];
   const count = 45 + Math.floor(Math.random()*40);
   for(let i=0;i<count;i++){
-    const ang = Math.random() * Math.PI * 2;
-    const speed = 1.5 + Math.random() * 4.5;
+    const ang = Math.random()*Math.PI*2;
+    const speed = 1.5 + Math.random()*4.5;
     particles.push({
       x, y,
-      vx: Math.cos(ang) * speed,
-      vy: Math.sin(ang) * speed,
+      vx: Math.cos(ang)*speed,
+      vy: Math.sin(ang)*speed,
       age: 0,
       life: 60 + Math.random()*50,
       color: colors[Math.floor(Math.random()*colors.length)]
     });
   }
 
-  // patlama sesi
-  try { explodeSnd.currentTime = 0; explodeSnd.play().catch(()=>{}); } catch(e){}
+  if(soundEnabled) playExplosionSound();
 }
 
 function drawFW(){
   fwCtx.clearRect(0,0,fwCanvas.width,fwCanvas.height);
 
-  // draw rockets
-  for(let i = rockets.length-1; i>=0; i--){
+  for(let i=rockets.length-1;i>=0;i--){
     const r = rockets[i];
     r.y -= r.speed;
     fwCtx.fillStyle = "#fff";
@@ -246,21 +213,16 @@ function drawFW(){
     }
   }
 
-  // draw particles
-  for(let i = particles.length-1; i>=0; i--){
+  for(let i=particles.length-1;i>=0;i--){
     const p = particles[i];
-    p.vy += 0.03; // gravity
+    p.vy += 0.03;
     p.x += p.vx;
     p.y += p.vy;
     p.age++;
-
-    const alpha = Math.max(0, 1 - p.age / p.life);
-    fwCtx.fillStyle = hexToRgba(p.color, alpha);
+    const a = Math.max(0, 1 - p.age / p.life);
+    fwCtx.fillStyle = hexToRgba(p.color, a);
     fwCtx.fillRect(p.x, p.y, 2, 2);
-
-    if(p.age >= p.life){
-      particles.splice(i,1);
-    }
+    if(p.age >= p.life) particles.splice(i,1);
   }
 
   requestAnimationFrame(drawFW);
@@ -268,110 +230,146 @@ function drawFW(){
 requestAnimationFrame(drawFW);
 
 function hexToRgba(hex, a){
-  const c = hex.replace("#", "");
+  const c = hex.replace('#','');
   const r = parseInt(c.substr(0,2),16);
   const g = parseInt(c.substr(2,2),16);
   const b = parseInt(c.substr(4,2),16);
   return `rgba(${r},${g},${b},${a})`;
 }
 
-/* =====================================================
-   SES KONTROL (Autoplay politikasıyla %100 uyumlu)
-   - Güvenilir HTTPS kaynakları kullanıldı
-   - İlk kullanıcı etkileşimiyle "unlock" yapılır
-   - Butonlar içinde play() çağrıları kesin kullanıcı-gesture kabul edilir
-===================================================== */
-const bgMusic = document.getElementById("bgMusic");
-const launchSnd = document.getElementById("launchSnd");
-const explodeSnd = document.getElementById("explodeSnd");
-
+/* -------------------- Web Audio (effects only) -------------------- */
+let audioCtx = null;
 let soundEnabled = false;
-let audioCtx = null; // gerektiğinde kullanılabilir
 
-// İlk etkileşimde tarayıcıyı "unlock" etmek için: hem audio tagleri, hem AudioContext (opsiyonel)
-function unlockAudioIfNeeded() {
-  // try play/pause each audio (in user gesture) to unlock
-  [bgMusic, launchSnd, explodeSnd].forEach(a => {
-    try {
-      a.currentTime = 0;
-      const p = a.play();
-      if (p && typeof p.then === "function") {
-        p.then(() => {
-          a.pause();
-          a.currentTime = 0;
-        }).catch(()=>{ /* ignore */ });
-      }
-    } catch(e){}
-  });
+// create AudioContext on first user gesture
+function ensureAudioContext(){
+  if(!audioCtx){
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  }
+}
 
-  // create a short AudioContext sound as extra unlock (some mobiles)
+/* ----- Launch (woosh) sound ----- */
+function playLaunchSound(){
   try {
-    if (!audioCtx) {
-      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      const osc = audioCtx.createOscillator();
-      const gain = audioCtx.createGain();
-      osc.type = "sine";
-      osc.frequency.value = 220;
-      gain.gain.value = 0.0001; // inaudible but unlocks context
-      osc.connect(gain);
-      gain.connect(audioCtx.destination);
-      osc.start(0);
-      setTimeout(()=>{ try{ osc.stop(); }catch(e){} }, 50);
-    }
+    ensureAudioContext();
+    const ctx = audioCtx;
+    const now = ctx.currentTime;
+
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+
+    osc.type = 'sawtooth';
+    osc.frequency.setValueAtTime(180, now);
+    osc.frequency.exponentialRampToValueAtTime(900, now + 0.18);
+
+    gain.gain.setValueAtTime(0, now);
+    gain.gain.linearRampToValueAtTime(0.25, now + 0.02);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
+
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+
+    osc.start(now);
+    osc.stop(now + 0.26);
   } catch(e){}
 }
 
-// toggle sound (called from soundBtn click — direct user gesture)
-function toggleSound() {
-  soundEnabled = !soundEnabled;
-  const btn = document.getElementById("soundBtn");
-  btn.innerText = soundEnabled ? "🔊 Ses Açık" : "🔇 Ses Kapalı";
+/* ----- Explosion (noise) ----- */
+function playExplosionSound(){
+  try {
+    ensureAudioContext();
+    const ctx = audioCtx;
+    const now = ctx.currentTime;
 
-  // unlock now (inside gesture)
-  unlockAudioIfNeeded();
+    // create noise buffer
+    const bufferSize = ctx.sampleRate * 0.4; // 0.4s
+    const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+    const data = buffer.getChannelData(0);
+    for(let i=0;i<bufferSize;i++){
+      data[i] = (Math.random()*2-1) * Math.pow(1 - i/bufferSize, 3); // decay envelope in buffer
+    }
 
-  if (soundEnabled) {
-    try { bgMusic.currentTime = 0; bgMusic.play().catch(()=>{}); } catch(e){}
-  } else {
-    try { bgMusic.pause(); } catch(e){}
-  }
+    const noise = ctx.createBufferSource();
+    noise.buffer = buffer;
+
+    const bandpass = ctx.createBiquadFilter();
+    bandpass.type = 'bandpass';
+    bandpass.frequency.value = 1200;
+    bandpass.Q.value = 0.7;
+
+    const gain = ctx.createGain();
+    gain.gain.setValueAtTime(0.6, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.45);
+
+    // low rumble
+    const rumble = ctx.createOscillator();
+    rumble.type = 'sine';
+    rumble.frequency.value = 80;
+    const rumbleGain = ctx.createGain();
+    rumbleGain.gain.setValueAtTime(0.35, now);
+    rumbleGain.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
+
+    noise.connect(bandpass);
+    bandpass.connect(gain);
+    gain.connect(ctx.destination);
+
+    rumble.connect(rumbleGain);
+    rumbleGain.connect(ctx.destination);
+
+    noise.start(now);
+    noise.stop(now + 0.45);
+
+    rumble.start(now);
+    rumble.stop(now + 0.45);
+  } catch(e){}
 }
 
-// also unlock on first pointerdown anywhere to be safe
-window.addEventListener("pointerdown", function firstUnlock(){
+/* unlock trick: play+pause small sound in user gesture to unlock browser */
+function unlockAudioIfNeeded(){
+  try {
+    ensureAudioContext();
+    // small silent oscillator to unlock
+    const ctx = audioCtx;
+    const osc = ctx.createOscillator();
+    const g = ctx.createGain();
+    g.gain.value = 0.00001;
+    osc.connect(g); g.connect(ctx.destination);
+    osc.start();
+    setTimeout(()=>{ try { osc.stop(); } catch(e){} }, 50);
+  } catch(e){}
+}
+
+/* -------------------- Controls -------------------- */
+const soundBtn = document.getElementById('soundBtn');
+const startBtn = document.getElementById('startBtn');
+
+soundBtn.addEventListener('click', () => {
+  // user gesture
   unlockAudioIfNeeded();
-  window.removeEventListener("pointerdown", firstUnlock);
-}, { once:true, passive: true });
+  soundEnabled = !soundEnabled;
+  soundBtn.innerText = soundEnabled ? '🔊 Ses Açık' : '🔇 Ses Kapalı';
+  soundBtn.setAttribute('aria-pressed', String(soundEnabled));
+});
 
-/* =====================================================
-   Buton eventleri
-===================================================== */
-document.getElementById("soundBtn").addEventListener("click", toggleSound);
-
-document.getElementById("startBtn").addEventListener("click", function(){
-  // start is a user gesture: ensure unlock and then start fireworks and sounds
+startBtn.addEventListener('click', () => {
+  // user gesture
   unlockAudioIfNeeded();
 
-  if (soundEnabled) {
-    try { launchSnd.currentTime = 0; launchSnd.play().catch(()=>{}); } catch(e){}
+  // play immediate feedback launch sound if enabled
+  if(soundEnabled) playLaunchSound();
+
+  if(!autoLaunch){
+    autoLaunch = setInterval(launchRocket, 650);
   }
-
-  // start auto-launch if not already started
-  if (!autoLaunchId) autoLaunchId = setInterval(launchRocket, 650);
-
-  // send a few immediate rockets for fast feedback
+  // launch a couple immediately for feedback
   launchRocket(); launchRocket();
 });
 
-/* =====================================================
-   Debug helper (optional) - uncomment to test quickly
-===================================================== */
-// // quick test button (if you want): create, append to body
-// const testBtn = document.createElement('button');
-// testBtn.textContent = "TEST SES (hareket sonrası)";
-// testBtn.style.position='fixed'; testBtn.style.right='10px'; testBtn.style.top='10px'; testBtn.style.zIndex=9999;
-// testBtn.onclick = ()=> { unlockAudioIfNeeded(); bgMusic.play().catch(()=>{}); launchSnd.play().catch(()=>{}); explodeSnd.play().catch(()=>{}); };
-// document.body.appendChild(testBtn);
+/* also unlock on first pointerdown anywhere to be safe */
+window.addEventListener('pointerdown', function firstUnlock(){
+  unlockAudioIfNeeded();
+  window.removeEventListener('pointerdown', firstUnlock);
+}, { once:true, passive:true });
 
 </script>
 </body>
