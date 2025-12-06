@@ -5,6 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Mutlu Yıllar 2026 — Emlak Grubu</title>
 
+  <!-- Cache Tamamen Kapalı (telefon için zorunlu) -->
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+
   <style>
     body {
       margin: 0;
@@ -54,7 +59,6 @@
     #startBtn { background: #ffd36b; color: #000; }
     #muteBtn  { background: #333; color: white; }
 
-    /* KAR */
     .snowflake {
       position: fixed;
       top: -10px;
@@ -65,13 +69,9 @@
     }
 
     @keyframes fall {
-      to {
-        transform: translateY(110vh);
-        opacity: 0;
-      }
+      to { transform: translateY(110vh); opacity: 0; }
     }
 
-    /* HAVAİ FİŞEK */
     .dot {
       position: absolute;
       width: 6px;
@@ -100,7 +100,7 @@
   <h2>MUTLU YILLAR EMLAK GRUBU-3</h2>
 
   <div class="desc">
-    2026 hepiniz için sağlık, mutluluk ve neşe getirsin.  
+    2026 hepiniz için sağlık, mutluluk ve neşe getirsin.<br>
     Yeni yılda umut dolu başlangıçlar, huzur ve başarıyla dolu günler dileriz.
   </div>
 
@@ -109,13 +109,12 @@
 
   <div class="footer">Bu sayfa: KEMALETTİN DUYAR tarafından hazırlanmıştır.</div>
 
-  <!-- Arka Plan Müzik -->
   <audio id="music" loop preload="auto"
    src="https://cdn.pixabay.com/download/audio/2022/03/01/audio_11ac392cda.mp3?filename=new-year-party-10980.mp3">
   </audio>
 
   <script>
-    /* ---------------- KAR YAĞIŞI ---------------- */
+    /* KAR YAĞIŞI */
     function createSnow() {
       const s = document.createElement("div");
       s.classList.add("snowflake");
@@ -128,8 +127,7 @@
     }
     setInterval(createSnow, 120);
 
-
-    /* --------------- SESLER --------------- */
+    /* SES */
     let soundEnabled = false;
     let userActivated = false;
 
@@ -143,31 +141,24 @@
 
     function unlockSound() {
       if (userActivated) return;
-
       bgMusic.play().then(() => {
         bgMusic.pause();
         bgMusic.currentTime = 0;
       });
-
       userActivated = true;
     }
 
     function playLaunch() {
       if (!soundEnabled) return;
-      const boom = new Audio(launchSoundSrc);
-      boom.volume = 1;
-      boom.play().catch(()=>{});
+      new Audio(launchSoundSrc).play().catch(()=>{});
     }
 
     function playExplosion() {
       if (!soundEnabled) return;
-      const exp = new Audio(explodeSoundSrc);
-      exp.volume = 1;
-      exp.play().catch(()=>{});
+      new Audio(explodeSoundSrc).play().catch(()=>{});
     }
 
-
-    /* ---------------- HAVAİ FİŞEK ---------------- */
+    /* HAVAİ FİŞEK */
     function explode(x, y) {
       for (let i = 0; i < 36; i++) {
         const dot = document.createElement("div");
@@ -182,7 +173,8 @@
 
         setTimeout(() => {
           dot.style.transition = "1.6s ease-out";
-          dot.style.transform = `translate(${Math.cos(angle)*distance}px, ${Math.sin(angle)*distance}px)`;
+          dot.style.transform =
+            `translate(${Math.cos(angle)*distance}px, ${Math.sin(angle)*distance}px)`;
           dot.style.opacity = 0;
         }, 10);
 
@@ -192,7 +184,6 @@
 
     function startShow() {
       unlockSound();
-
       if (soundEnabled) bgMusic.play().catch(()=>{});
 
       for (let i = 0; i < 10; i++) {
@@ -200,8 +191,8 @@
           const x = Math.random()*window.innerWidth*0.8 + window.innerWidth*0.1;
           const y = Math.random()*window.innerHeight*0.4 + 150;
 
-          playLaunch();      // Fırlama sesi
-          setTimeout(playExplosion, 500); // 0.5 saniye sonra patlama sesi
+          playLaunch();
+          setTimeout(playExplosion, 500);
 
           explode(x, y);
 
@@ -209,12 +200,10 @@
       }
     }
 
-    /* ------------------- BUTONLAR ------------------- */
     document.getElementById("startBtn").onclick = startShow;
 
     document.getElementById("muteBtn").onclick = () => {
       soundEnabled = !soundEnabled;
-
       if (soundEnabled) {
         unlockSound();
         bgMusic.play().catch(()=>{});
@@ -225,25 +214,21 @@
       }
     };
   </script>
-  
-<script>
-  // Otomatik version numarası üretir (her sayfa yüklemede güncel)
-  const version = Date.now();
 
-  // Sayfadaki tüm CSS ve JS dosyalarını bul
-  document.querySelectorAll('link[rel="stylesheet"], script[src]').forEach(el => {
-    const attr = el.tagName === "LINK" ? "href" : "src";
-    const url = el.getAttribute(attr);
+  <!-- ✨ HTML DOSYASINI OTOMATİK VERSİYONLAYIP CACHE KIRAN SİSTEM -->
+  <script>
+  (function() {
+    const key = "page_version";
+    const newVersion = Date.now().toString();
+    const oldVersion = sessionStorage.getItem(key);
 
-    if (!url) return;
+    if (oldVersion !== newVersion) {
+      sessionStorage.setItem(key, newVersion);
+      const clean = window.location.origin + window.location.pathname;
+      window.location.replace(clean + "?v=" + newVersion);
+    }
+  })();
+  </script>
 
-    // Zaten version varsa kaldır
-    const cleanUrl = url.split("?")[0];
-
-    // Version parametresi ekle
-    el.setAttribute(attr, cleanUrl + "?v=" + version);
-  });
-</script>
-  
 </body>
 </html>
