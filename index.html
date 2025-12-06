@@ -1,240 +1,283 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Mutlu Yıllar 2026 — Emlak Grubu</title>
 
-  <!-- CACHE KAPALI (telefon zorunlu) -->
-  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
-  <meta http-equiv="Pragma" content="no-cache" />
-  <meta http-equiv="Expires" content="0" />
-
   <style>
-    body {
-      margin: 0;
-      overflow: hidden;
-      background: radial-gradient(ellipse at bottom, #0f1720 0%, #020307 80%);
-      font-family: Arial, sans-serif;
-      color: white;
-      text-align: center;
-    }
-
-    h1 {
-      color: #ffd24c;
-      margin-top: 40px;
-      text-shadow: 0 0 12px #000;
-      font-size: 2.4rem;
-    }
-
-    h2 {
-      margin-top: -10px;
-      color: #fff;
-      opacity: .9;
-      font-size: 1.2rem;
-      letter-spacing: 2px;
-    }
-
-    .desc {
-      margin: 20px auto;
-      max-width: 600px;
-      background: rgba(255,255,255,0.07);
-      padding: 12px 18px;
-      border-radius: 12px;
-      font-size: 1rem;
-      line-height: 1.4rem;
-      backdrop-filter: blur(6px);
-    }
-
-    button {
-      padding: 12px 18px;
-      border-radius: 12px;
-      border: none;
-      cursor: pointer;
-      font-weight: bold;
-      margin: 6px;
-      font-size: 1rem;
-    }
-
-    #startBtn { background: #ffd36b; color: #000; }
-    #muteBtn  { background: #333; color: white; }
-
-    .snowflake {
-      position: fixed;
-      top: -10px;
-      color: white;
-      user-select: none;
-      pointer-events: none;
-      animation: fall linear forwards;
-    }
-
-    @keyframes fall {
-      to { transform: translateY(110vh); opacity: 0; }
-    }
-
-    .dot {
-      position: absolute;
-      width: 6px;
-      height: 6px;
-      border-radius: 50%;
-      pointer-events: none;
-    }
-
-    .footer {
-      position: fixed;
-      bottom: 12px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: rgba(0,0,0,0.4);
-      padding: 8px 14px;
-      border-radius: 10px;
-      font-size: .85rem;
-      backdrop-filter: blur(4px);
-    }
+    html,body{height:100%;margin:0;background:radial-gradient(ellipse at bottom,#0f1720 0%,#020307 80%);font-family:Arial,sans-serif;color:#fff;overflow:hidden}
+    #snowCanvas,#fireworksCanvas{position:fixed;left:0;top:0;width:100vw;height:100vh;pointer-events:none}
+    .panel{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);display:flex;gap:10px;z-index:40}
+    button{padding:10px 16px;border-radius:10px;border:none;cursor:pointer;background:#ffffff18;color:#fff;backdrop-filter:blur(4px);border:1px solid #ffffff22}
+    #versionBox{position:fixed;top:10px;right:10px;background:#00000066;padding:6px 10px;border-radius:6px;font-size:13px;z-index:50}
+    .title-wrap{position:fixed;top:40px;width:100%;text-align:center;z-index:30}
+    h1{color:#ffd24c;margin:0;text-shadow:0 0 12px #000;font-size:2.2rem}
+    h2{margin:6px 0 0;color:#fff;opacity:.9;font-size:1rem;letter-spacing:1.5px}
   </style>
 </head>
-
 <body>
 
+<!-- VERSION KONTROLÜ (GÜVENLİ) -->
+<script>
+  // Versiyon kontrolü: DOMContentLoaded sonrası, kısa gecikmeyle yönlendirir.
+  // Böylece diğer script'ler DOM hazır olmadan kesintiye uğramaz.
+  (function(){
+    document.addEventListener("DOMContentLoaded", () => {
+      // Küçük gecikme: tüm görseller ve ses elementleri oluşturulsun.
+      setTimeout(() => {
+        try {
+          const key = "site_version_final";
+          const sessionVer = sessionStorage.getItem(key);
+          const currentParams = new URL(location.href).searchParams;
+          const urlVer = currentParams.get("v");
+
+          // Eğer URL'de 'v' parametresi yoksa veya sessiondaki veriden farklıysa -> yenile
+          if (!urlVer || sessionVer !== urlVer) {
+            const newVer = Date.now().toString();
+            sessionStorage.setItem(key, newVer);
+
+            // Temiz URL (aynı dosya) + v parametresi
+            const clean = window.location.origin + window.location.pathname;
+            // replace yerine href kullanıyoruz ki tarayıcı sayfayı kesin yüklesin
+            // fakat sadece farklıysa yönlendirme olur, döngü yaratılmaz.
+            window.location.href = clean + "?v=" + newVer;
+          }
+        } catch (e) {
+          // Eğer herhangi bir hata olursa, sessizce devam et (uyumluluk için).
+          console.warn("Versiyon kontrol hatası", e);
+        }
+      }, 200); // 200ms: yeterli ve güvenli
+    });
+  })();
+</script>
+
+<!-- Başlık -->
+<div class="title-wrap">
   <h1>Mutlu Yıllar 2026 🎆</h1>
   <h2>MUTLU YILLAR EMLAK GRUBU</h2>
+</div>
 
-  <div class="desc">
-    2026 hepiniz için sağlık, mutluluk ve neşe getirsin.<br>
-    Yeni yılda umut dolu başlangıçlar, huzur ve başarıyla dolu günler dileriz.
-  </div>
+<!-- CANVAS'lar -->
+<canvas id="snowCanvas"></canvas>
+<canvas id="fireworksCanvas"></canvas>
 
-  <button id="startBtn">Kutlamayı Başlat 🎉</button>
-  <button id="muteBtn">🔊 Ses Aç</button>
+<!-- Kontroller -->
+<div id="versionBox">Versiyon: <span id="verText">—</span></div>
 
-  <div class="footer">Bu sayfa: KEMALETTİN DUYAR tarafından hazırlanmıştır.</div>
+<div class="panel">
+  <button id="soundBtn">🔇 Ses Kapalı</button>
+  <button id="startBtn">🎆 Kutlamayı Başlat</button>
+</div>
 
-  <!-- ARKA PLAN MÜZİK -->
-  <audio id="music" loop preload="auto"
-   src="https://cdn.pixabay.com/download/audio/2022/03/01/audio_11ac392cda.mp3?filename=new-year-party-10980.mp3">
-  </audio>
+<!-- Ses (önceden yükleniyor) -->
+<audio id="bgMusic" loop preload="auto" src="https://cdn.pixabay.com/download/audio/2022/03/01/audio_11ac392cda.mp3?filename=new-year-party-10980.mp3"></audio>
+<audio id="launchSnd" preload="auto" src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_63aebaa9d8.mp3?filename=launch-rocket-113177.mp3"></audio>
+<audio id="explodeSnd" preload="auto" src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_49709c8a31.mp3?filename=firework-1-113172.mp3"></audio>
 
-  <script>
-    /* --- KAR YAĞIŞI --- */
-    function createSnow() {
-      const s = document.createElement("div");
-      s.classList.add("snowflake");
-      s.innerHTML = "❆";
-      s.style.left = Math.random() * window.innerWidth + "px";
-      s.style.fontSize = (10 + Math.random() * 18) + "px";
-      s.style.animationDuration = (4 + Math.random() * 5) + "s";
-      document.body.appendChild(s);
-      setTimeout(() => s.remove(), 9000);
+<script>
+/* ---------- VERSİYON GÖSTER ---------- */
+(function(){
+  // Eğer URL'de v param varsa onu göster, yoksa "yeni" yaz
+  try {
+    const params = new URL(location.href).searchParams;
+    const v = params.get("v") || "yeni";
+    document.getElementById("verText").innerText = v;
+  } catch(e){ document.getElementById("verText").innerText = "—"; }
+})();
+
+/* ---------- CANVAS BOYUTLANDIRMA ---------- */
+const snowCanvas = document.getElementById("snowCanvas");
+const snowCtx = snowCanvas.getContext("2d");
+const fwCanvas = document.getElementById("fireworksCanvas");
+const fwCtx = fwCanvas.getContext("2d");
+
+function resizeAll() {
+  const w = window.innerWidth;
+  const h = window.innerHeight;
+  snowCanvas.width = w; snowCanvas.height = h;
+  fwCanvas.width = w; fwCanvas.height = h;
+}
+window.addEventListener("resize", resizeAll);
+resizeAll();
+
+/* ---------- KAR YAĞIŞI (tam ekran, her taneler iniyor) ---------- */
+let flakes = [];
+function initFlakes(count = 220){
+  flakes = [];
+  for(let i=0;i<count;i++){
+    flakes.push({
+      x: Math.random()*window.innerWidth,
+      y: Math.random()*window.innerHeight,
+      r: 1 + Math.random()*5,
+      vx: (Math.random()-0.5)*0.5,
+      vy: 1 + Math.random()*2
+    });
+  }
+}
+initFlakes();
+
+function drawSnow(){
+  snowCtx.clearRect(0,0,snowCanvas.width,snowCanvas.height);
+  snowCtx.fillStyle = "rgba(255,255,255,0.9)";
+  snowCtx.beginPath();
+  for(const f of flakes){
+    snowCtx.moveTo(f.x,f.y);
+    snowCtx.arc(f.x,f.y,f.r,0,Math.PI*2);
+  }
+  snowCtx.fill();
+
+  // update
+  for(const f of flakes){
+    f.x += f.vx;
+    f.y += f.vy;
+    // hafif salınım
+    f.x += Math.sin((f.y/50) + f.r) * 0.3;
+    if(f.y > window.innerHeight + 10){
+      f.y = -10 - Math.random()*100; // yukarıdan yeniden başlat
+      f.x = Math.random()*window.innerWidth;
     }
-    setInterval(createSnow, 120);
+    if(f.x < -10) f.x = window.innerWidth + 10;
+    if(f.x > window.innerWidth + 10) f.x = -10;
+  }
+}
+setInterval(drawSnow, 30); // ~33fps
 
-    /* --- SES --- */
-    let soundEnabled = false;
-    let userActivated = false;
+/* ---------- HAVAİ FİŞEK (sürekli, çoklu patlama) ---------- */
+let rockets = [];
+let particles = [];
 
-    const launchSoundSrc =
-      "https://cdn.pixabay.com/download/audio/2022/03/15/audio_63aebaa9d8.mp3?filename=launch-rocket-113177.mp3";
-
-    const explodeSoundSrc =
-      "https://cdn.pixabay.com/download/audio/2022/03/15/audio_49709c8a31.mp3?filename=firework-1-113172.mp3";
-
-    const bgMusic = document.getElementById("music");
-
-    function unlockSound() {
-      if (userActivated) return;
-      bgMusic.play().then(() => {
-        bgMusic.pause();
-        bgMusic.currentTime = 0;
-      }).catch(()=>{});
-      userActivated = true;
-    }
-
-    function playLaunch() {
-      if (!soundEnabled) return;
-      new Audio(launchSoundSrc).play().catch(()=>{});
-    }
-
-    function playExplosion() {
-      if (!soundEnabled) return;
-      new Audio(explodeSoundSrc).play().catch(()=>{});
-    }
-
-    /* --- HAVAİ FİŞEK --- */
-    function explode(x, y) {
-      for (let i = 0; i < 36; i++) {
-        const dot = document.createElement("div");
-        dot.classList.add("dot");
-        dot.style.background =
-          ["#ff4d4d","#ffd11a","#66ff66","#66b3ff"][Math.floor(Math.random()*4)];
-        dot.style.left = x + "px";
-        dot.style.top  = y + "px";
-        document.body.appendChild(dot);
-
-        const angle = Math.random() * 360;
-        const distance = 120 + Math.random() * 80;
-
-        setTimeout(() => {
-          dot.style.transition = "1.6s ease-out";
-          dot.style.transform =
-            `translate(${Math.cos(angle)*distance}px, ${Math.sin(angle)*distance}px)`;
-          dot.style.opacity = 0;
-        }, 10);
-
-        setTimeout(() => dot.remove(), 1900);
-      }
-    }
-
-    function startShow() {
-      unlockSound();
-      if (soundEnabled) bgMusic.play().catch(()=>{});
-
-      for (let i = 0; i < 10; i++) {
-        setTimeout(() => {
-          const x = Math.random()*window.innerWidth*0.8 + window.innerWidth*0.1;
-          const y = Math.random()*window.innerHeight*0.4 + 150;
-
-          playLaunch();
-          setTimeout(playExplosion, 500);
-
-          explode(x, y);
-        }, i * 1500);
-      }
-    }
-
-    document.getElementById("startBtn").onclick = startShow;
-
-    document.getElementById("muteBtn").onclick = () => {
-      soundEnabled = !soundEnabled;
-      if (soundEnabled) {
-        unlockSound();
-        bgMusic.play().catch(()=>{});
-        document.getElementById("muteBtn").innerText = "🔊 Ses Açık";
-      } else {
-        bgMusic.pause();
-        document.getElementById("muteBtn").innerText = "🔈 Sessiz";
-      }
-    };
-  </script>
-
-  <!-- CACHE KIRICI / VERSİYONLAMALI FİNAL SİSTEM -->
-  <script>
-  document.addEventListener("DOMContentLoaded", () => {
-    setTimeout(() => {
-      const key = "page_version";
-      const newVersion = Date.now().toString();
-      const oldVersion = sessionStorage.getItem(key);
-
-      if (oldVersion !== newVersion) {
-        sessionStorage.setItem(key, newVersion);
-
-        const clean =
-          window.location.origin + window.location.pathname;
-
-        window.location.href = clean + "?v=" + newVersion;
-      }
-    }, 300);
+function launchRocket(){
+  rockets.push({
+    x: Math.random()*fwCanvas.width,
+    y: fwCanvas.height + 10,
+    targetY: 60 + Math.random()* (fwCanvas.height*0.5),
+    speed: 6 + Math.random()*3
   });
-  </script>
+}
+
+function explode(x,y){
+  const colors = ["#ff4d4d","#ffd11a","#66ff66","#66b3ff","#ff66cc","#ffffff"];
+  const count = 40 + Math.floor(Math.random()*30);
+  for(let i=0;i<count;i++){
+    const angle = Math.random()*Math.PI*2;
+    const speed = 1.5 + Math.random()*4;
+    particles.push({
+      x,y,
+      vx: Math.cos(angle)*speed,
+      vy: Math.sin(angle)*speed,
+      life: 50 + Math.random()*40,
+      age:0,
+      color: colors[Math.floor(Math.random()*colors.length)]
+    });
+  }
+}
+
+function drawFW(){
+  fwCtx.clearRect(0,0,fwCanvas.width,fwCanvas.height);
+
+  // rockets
+  for(let i=rockets.length-1;i>=0;i--){
+    const r = rockets[i];
+    r.y -= r.speed;
+    fwCtx.fillStyle = "#fff";
+    fwCtx.fillRect(r.x, r.y, 3, 8);
+
+    if(r.y <= r.targetY){
+      // patlama
+      explode(r.x, r.y);
+      rockets.splice(i,1);
+      // ses
+      if(soundEnabled){
+        try { explodeSnd.currentTime = 0; explodeSnd.play().catch(()=>{}); } catch(e){}
+      }
+    }
+  }
+
+  // particles
+  for(let i=particles.length-1;i>=0;i--){
+    const p = particles[i];
+    // physics
+    p.vy += 0.03; // yerçekimi hafif
+    p.x += p.vx;
+    p.y += p.vy;
+    p.age += 1;
+
+    const alpha = Math.max(0, 1 - p.age / p.life);
+    fwCtx.fillStyle = hexToRgba(p.color, alpha);
+    fwCtx.fillRect(p.x, p.y, 2, 2);
+
+    if(p.age >= p.life) particles.splice(i,1);
+  }
+
+  requestAnimationFrame(drawFW);
+}
+drawFW();
+
+function hexToRgba(hex, a){
+  const c = hex.replace("#","");
+  const r = parseInt(c.substr(0,2),16);
+  const g = parseInt(c.substr(2,2),16);
+  const b = parseInt(c.substr(4,2),16);
+  return `rgba(${r},${g},${b},${a})`;
+}
+
+/* ---------- Başlatma: butona basıldığında 10 saniye boyunca her 600ms ateşle ---------- */
+let celebrationInterval = null;
+function startCelebration(){
+  if(celebrationInterval) return;
+  // ilk anda birkaç roket gönder
+  launchRocket(); launchRocket(); launchRocket();
+  celebrationInterval = setInterval(launchRocket, 600);
+  // otomatik durdurmak istersen örn 20 saniye sonra: aşağıdaki satırı aç
+  // setTimeout(()=>{ clearInterval(celebrationInterval); celebrationInterval=null; },20000);
+}
+
+/* ---------- SES KONTROLÜ (tek global audio nesneleri) ---------- */
+const bgMusic = document.getElementById("bgMusic");
+const launchSnd = document.getElementById("launchSnd");
+const explodeSnd = document.getElementById("explodeSnd");
+
+let soundEnabled = false;
+const soundBtn = document.getElementById("soundBtn");
+
+function preloadSounds(){
+  // Kullanıcı etkileşimiyle çağrılması gerekiyor; burada sadece hazır etme denemesi
+  try{
+    bgMusic.load(); launchSnd.load(); explodeSnd.load();
+  }catch(e){}
+}
+
+function toggleSound(){
+  soundEnabled = !soundEnabled;
+  soundBtn.innerText = soundEnabled ? "🔊 Ses Açık" : "🔇 Ses Kapalı";
+  if(soundEnabled){
+    // mobil tarayıcıların user gesture politikası: play() yalnızca bir kullanıcı etkileşimiyle başarılabilir
+    bgMusic.currentTime = 0;
+    bgMusic.play().catch(()=>{});
+    try{ launchSnd.currentTime = 0; }catch(e){}
+  } else {
+    try{ bgMusic.pause(); }catch(e){}
+  }
+}
+
+/* ---------- Buton event bağlama (güvenli) ---------- */
+document.getElementById("startBtn").addEventListener("click", function(){
+  // ilk tıklama kullanıcı etkileşimi olduğu için ses izinleri açılabilir
+  preloadSounds();
+  // ufak bir deneme sesleri (kullanıcı etkileşimi içinde)
+  if(soundEnabled){
+    try{ launchSnd.currentTime = 0; launchSnd.play().catch(()=>{}); }catch(e){}
+  }
+  startCelebration();
+});
+soundBtn.addEventListener("click", function(){ toggleSound(); });
+
+/* ---------- İlk otomatik küçük roketler (görsel zenginlik) ---------- */
+setTimeout(()=>{ launchRocket(); }, 800);
+setTimeout(()=>{ launchRocket(); }, 1500);
+
+</script>
 
 </body>
 </html>
