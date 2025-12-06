@@ -59,7 +59,6 @@
       letter-spacing:1.5px;
     }
 
-    /* 🎛 BUTON PANELİ – footer’dan uzaklaştırıldı */
     .panel{
       position:fixed;bottom:110px;
       left:50%;transform:translateX(-50%);
@@ -101,7 +100,6 @@
 <canvas id="snowCanvas"></canvas>
 <canvas id="fireworksCanvas"></canvas>
 
-<!-- 📌 En alttaki yazı -->
 <div class="footer">Bu sayfa: Kemalettin Duyar tarafından hazırlanmıştır.</div>
 
 <div class="panel">
@@ -120,7 +118,7 @@ src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_63aebaa9d8.mp3?file
 src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_49709c8a31.mp3?filename=firework-1-113172.mp3"></audio>
 
 <script>
-/* ========== CANVAS AYARLARI ========== */
+/* ========== CANVAS ========== */
 const snowCanvas=document.getElementById("snowCanvas");
 const snowCtx=snowCanvas.getContext("2d");
 const fwCanvas=document.getElementById("fireworksCanvas");
@@ -198,6 +196,11 @@ function explode(x,y){
       color:colors[Math.floor(Math.random()*colors.length)]
     });
   }
+
+  if(soundEnabled){
+    explodeSnd.currentTime=0;
+    explodeSnd.play().catch(()=>{});
+  }
 }
 
 function drawFW(){
@@ -212,11 +215,6 @@ function drawFW(){
     if(r.y<=r.targetY){
       explode(r.x,r.y);
       rockets.splice(i,1);
-
-      if(soundEnabled){
-        explodeSnd.currentTime=0;
-        explodeSnd.play().catch(()=>{});
-      }
     }
   }
 
@@ -240,31 +238,39 @@ function drawFW(){
 }
 drawFW();
 
-/* ========== SES KONTROLÜ — %100 ÇALIŞIR ========== */
+/* =====================================================
+   🔊 SES KONTROLÜ – %100 TARAYICI UYUMLU (YENİ SÜRÜM)
+===================================================== */
 let soundEnabled=false;
 const bgMusic=document.getElementById("bgMusic");
-const soundBtn=document.getElementById("soundBtn");
+const launchSnd=document.getElementById("launchSnd");
+const explodeSnd=document.getElementById("explodeSnd");
+
+let audioCtx=null;
 
 function toggleSound(){
   soundEnabled=!soundEnabled;
   soundBtn.innerText=soundEnabled?"🔊 Ses Açık":"🔇 Ses Kapalı";
 
   if(soundEnabled){
-    bgMusic.currentTime=0;
+    if(!audioCtx){
+      audioCtx=new(AudioContext||webkitAudioContext)();
+    }
 
-    bgMusic.play().catch(err=>{
-      console.log("Müzik engellendi:",err);
-    });
+    bgMusic.currentTime=0;
+    bgMusic.play().catch(err=>{ console.log("Müzik engellendi:",err); });
 
     launchSnd.play().catch(()=>{});
     explodeSnd.play().catch(()=>{});
-  } else {
+  }
+  else{
     bgMusic.pause();
   }
 }
 
 /* ========== KUTLAMAYI BAŞLAT ========== */
 document.getElementById("startBtn").addEventListener("click",()=>{
+
   if(soundEnabled){
     launchSnd.currentTime=0;
     launchSnd.play().catch(()=>{});
@@ -277,7 +283,7 @@ document.getElementById("startBtn").addEventListener("click",()=>{
   }
 });
 
-soundBtn.addEventListener("click",toggleSound);
+document.getElementById("soundBtn").addEventListener("click",toggleSound);
 </script>
 
 </body>
