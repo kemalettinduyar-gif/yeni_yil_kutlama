@@ -1,165 +1,288 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Yeni Yıl Kutlama</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Mutlu Yıllar 2026 — Emlak Grubu</title>
 
-<style>
-    body {
-        margin: 0;
-        background: linear-gradient(to bottom, #001, #004);
-        overflow: hidden;
-        font-family: Arial, sans-serif;
-        color: white;
-        text-align: center;
+  <!-- GİZLİ VERSİYON KONTROLÜ -->
+  <script>
+  (function(){
+    document.addEventListener("DOMContentLoaded", () => {
+      setTimeout(() => {
+        try {
+          const KEY = "page_v_final";
+          const url = new URL(window.location.href);
+          const v = url.searchParams.get("v");
+          const saved = sessionStorage.getItem(KEY);
+          if (!v || v !== saved) {
+            const newV = Date.now().toString();
+            sessionStorage.setItem(KEY, newV);
+            const clean = window.location.origin + window.location.pathname;
+            window.location.href = clean + "?v=" + newV;
+          }
+        } catch(e){ }
+      }, 400);
+    });
+  })();
+  </script>
+
+  <style>
+    html,body{
+      height:100%;
+      margin:0;
+      background: radial-gradient(ellipse at bottom, #0f1720 0%, #020307 80%);
+      font-family: Arial, Helvetica, sans-serif;
+      color: #fff;
+      overflow: hidden;
     }
 
-    #titleBox {
-        margin-top: 30px;
-        font-size: 28px;
-        font-weight: bold;
+    #snowCanvas,#fireworksCanvas{
+      position: fixed;
+      left:0; top:0;
+      width:100vw; height:100vh;
+      pointer-events: none;
+      z-index: 10;
     }
 
-    .panel {
-        margin-top: 20px;
+    .title-wrap{
+      position: fixed; top:28px; width:100%; text-align:center; z-index:60; pointer-events: none;
     }
-    .panel button {
-        padding: 10px 20px;
-        font-size: 18px;
-        border-radius: 10px;
-        border: none;
-        cursor: pointer;
+    h1{ color:#ffd24c; margin:0; font-size:2.1rem; text-shadow:0 0 12px #000; }
+    h2{ margin:6px 0 0; font-size:1rem; opacity:.95; letter-spacing:1.2px; }
+
+    .panel{
+      position: fixed;
+      bottom: 110px;
+      left: 50%;
+      transform: translateX(-50%);
+      display:flex;
+      gap:10px;
+      z-index:70;
+    }
+    .panel button{
+      padding:10px 16px;
+      border-radius:10px;
+      border:none;
+      cursor:pointer;
+      background: rgba(255,255,255,0.12);
+      color:#fff;
+      backdrop-filter: blur(4px);
+      border:1px solid rgba(255,255,255,0.14);
+      font-size:15px;
     }
 
-    #author {
-        margin-top: 15px;
-        font-size: 14px;
-        opacity: 0.7;
+    .footer{
+      position: fixed;
+      bottom: 18px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0,0,0,0.45);
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-size:14px;
+      z-index:70;
+      white-space: nowrap;
     }
-
-    canvas {
-        position: absolute;
-        left: 0; top: 0;
-        width: 100%; height: 100%;
-        pointer-events: none;
-    }
-</style>
+  </style>
 </head>
 <body>
 
-<div id="titleBox">
-    <h2>MUTLU YILLAR</h2>
-    <h3 id="siteName">EMLAK GRUBU</h3>
-</div>
+  <div class="title-wrap">
+    <h1>Mutlu Yıllar 2026 🎆</h1>
+    <h2>MUTLU YILLAR EMLAK GRUBU</h2>
+  </div>
 
-<div class="panel">
-    <button id="soundBtn">🔇 Ses Kapalı</button>
+  <canvas id="snowCanvas"></canvas>
+  <canvas id="fireworksCanvas"></canvas>
+
+  <div class="panel">
+    <button id="soundBtn" aria-pressed="false">🔇 Ses Kapalı</button>
     <button id="startBtn">🎆 Kutlamayı Başlat</button>
-</div>
+  </div>
 
-<div id="author">Bu sayfa: Kemalettin Duyar tarafından yapılmıştır.</div>
-
-<canvas id="canvas"></canvas>
-
-<!-- Patlama sesi -->
-<audio id="boomSound" preload="auto">
-    <source src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_4cd98447d0.mp3?filename=small-explosion-109591.mp3" type="audio/mpeg">
-</audio>
+  <div class="footer">Bu sayfa: Kemalettin Duyar tarafından hazırlanmıştır.</div>
 
 <script>
-/* ==============================
-   SES KONTROL 
-================================= */
-const boom = document.getElementById("boomSound");
+/* -------------------- Canvas setup -------------------- */
+const snowCanvas = document.getElementById('snowCanvas');
+const snowCtx = snowCanvas.getContext('2d');
+const fwCanvas = document.getElementById('fireworksCanvas');
+const fwCtx = fwCanvas.getContext('2d');
+
+function resizeAll(){
+  snowCanvas.width = window.innerWidth;
+  snowCanvas.height = window.innerHeight;
+  fwCanvas.width = window.innerWidth;
+  fwCanvas.height = window.innerHeight;
+}
+window.addEventListener('resize', resizeAll);
+resizeAll();
+
+/* -------------------- Snow -------------------- */
+let flakes = [];
+function initFlakes(n=260){
+  flakes = [];
+  for(let i=0;i<n;i++){
+    flakes.push({
+      x: Math.random()*window.innerWidth,
+      y: Math.random()*window.innerHeight,
+      r: 1 + Math.random()*4,
+      vx: (Math.random()-0.5)*0.6,
+      vy: 1 + Math.random()*2
+    });
+  }
+}
+initFlakes();
+
+function drawSnow(){
+  snowCtx.clearRect(0,0,snowCanvas.width,snowCanvas.height);
+  snowCtx.fillStyle = "rgba(255,255,255,0.95)";
+  snowCtx.beginPath();
+  for(const f of flakes){
+    snowCtx.moveTo(f.x,f.y);
+    snowCtx.arc(f.x,f.y,f.r,0,Math.PI*2);
+  }
+  snowCtx.fill();
+  for(const f of flakes){
+    f.x += f.vx + Math.sin(f.y/60)*0.35;
+    f.y += f.vy;
+    if(f.y > window.innerHeight+10){
+      f.y = -10; f.x = Math.random()*window.innerWidth;
+    }
+    if(f.x < -20) f.x = window.innerWidth + 20;
+    if(f.x > window.innerWidth + 20) f.x = -20;
+  }
+  requestAnimationFrame(drawSnow);
+}
+requestAnimationFrame(drawSnow);
+
+/* -------------------- Fireworks -------------------- */
+let rockets = [], particles = [], autoLaunch = null;
+
+function launchRocket(){
+  rockets.push({
+    x: Math.random()*fwCanvas.width,
+    y: fwCanvas.height + 10,
+    targetY: 60 + Math.random()*(fwCanvas.height*0.45),
+    speed: 6 + Math.random()*3
+  });
+}
+
+function explode(x,y){
+  const colors = ["#ff4d4d","#ffd11a","#66ff66","#66b3ff","#ff66cc","#ffffff"];
+  const count = 45 + Math.floor(Math.random()*40);
+  for(let i=0;i<count;i++){
+    const ang = Math.random()*Math.PI*2;
+    const speed = 1.5 + Math.random()*4.5;
+    particles.push({
+      x, y,
+      vx: Math.cos(ang)*speed,
+      vy: Math.sin(ang)*speed,
+      age: 0,
+      life: 60 + Math.random()*50,
+      color: colors[Math.floor(Math.random()*colors.length)]
+    });
+  }
+
+  if(soundEnabled) playExplosionSound();
+}
+
+function drawFW(){
+  fwCtx.clearRect(0,0,fwCanvas.width,fwCanvas.height);
+
+  for(let i=rockets.length-1;i>=0;i--){
+    const r = rockets[i];
+    r.y -= r.speed;
+    fwCtx.fillStyle = "#fff";
+    fwCtx.fillRect(r.x, r.y, 3, 8);
+
+    if(r.y <= r.targetY){
+      explode(r.x, r.y);
+      rockets.splice(i,1);
+    }
+  }
+
+  for(let i=particles.length-1;i>=0;i--){
+    const p = particles[i];
+    p.vy += 0.03;
+    p.x += p.vx;
+    p.y += p.vy;
+    p.age++;
+    const a = Math.max(0, 1 - p.age / p.life);
+    fwCtx.fillStyle = hexToRgba(p.color, a);
+    fwCtx.fillRect(p.x, p.y, 2, 2);
+    if(p.age >= p.life) particles.splice(i,1);
+  }
+
+  requestAnimationFrame(drawFW);
+}
+requestAnimationFrame(drawFW);
+
+function hexToRgba(hex, a){
+  const c = hex.replace('#','');
+  return `rgba(${parseInt(c.substr(0,2),16)},${parseInt(c.substr(2,2),16)},${parseInt(c.substr(4,2),16)},${a})`;
+}
+
+/* -------------------- Web Audio (ONLY explosion) -------------------- */
+let audioCtx = null;
 let soundEnabled = false;
 
-document.getElementById("soundBtn").onclick = () => {
-    soundEnabled = !soundEnabled;
-    document.getElementById("soundBtn").textContent =
-        soundEnabled ? "🔊 Ses Açık" : "🔇 Ses Kapalı";
+function ensureAudioContext(){
+  if(!audioCtx){
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  } else if(audioCtx.state === 'suspended'){
+    audioCtx.resume();
+  }
+}
+
+function playExplosionSound(){
+  ensureAudioContext();
+  const ctx = audioCtx;
+  const now = ctx.currentTime;
+
+  const bufferSize = Math.floor(ctx.sampleRate * 0.38);
+  const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+  const data = buffer.getChannelData(0);
+
+  for(let i=0;i<bufferSize;i++){
+    data[i] = (Math.random()*2-1) * Math.pow(1 - i/bufferSize, 3);
+  }
+
+  const noise = ctx.createBufferSource();
+  noise.buffer = buffer;
+
+  const bandpass = ctx.createBiquadFilter();
+  bandpass.type = 'bandpass';
+  bandpass.frequency.value = 1400 + Math.random()*600;
+
+  const gain = ctx.createGain();
+  gain.gain.setValueAtTime(0.7, now);
+  gain.gain.exponentialRampToValueAtTime(0.001, now + 0.45);
+
+  noise.connect(bandpass);
+  bandpass.connect(gain);
+  gain.connect(ctx.destination);
+
+  noise.start(now);
+  noise.stop(now+0.45);
+}
+
+/* -------------------- Controls -------------------- */
+document.getElementById('soundBtn').onclick = () => {
+  ensureAudioContext();
+  soundEnabled = !soundEnabled;
+  soundBtn.textContent = soundEnabled ? "🔊 Ses Açık" : "🔇 Ses Kapalı";
 };
 
-/* ==============================
-   HAVAİ FİŞEK ANİMASYONU
-================================= */
-const canvas = document.getElementById("canvas");
-const ctx = canvas.getContext("2d");
-canvas.width = innerWidth;
-canvas.height = innerHeight;
-
-function resize() {
-    canvas.width = innerWidth;
-    canvas.height = innerHeight;
-}
-addEventListener("resize", resize);
-
-class Particle {
-    constructor(x, y, color) {
-        this.x = x;
-        this.y = y;
-        this.color = color;
-        this.velX = (Math.random() - 0.5) * 6;
-        this.velY = (Math.random() - 0.5) * 6;
-        this.alpha = 1;
-    }
-    update() {
-        this.x += this.velX;
-        this.y += this.velY;
-        this.velY += 0.02;
-        this.alpha -= 0.01;
-    }
-    draw() {
-        ctx.globalAlpha = this.alpha;
-        ctx.fillStyle = this.color;
-        ctx.beginPath();
-        ctx.arc(this.x, this.y, 3, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.globalAlpha = 1;
-    }
-}
-
-let particles = [];
-
-function boomFirework() {
-    const x = Math.random() * canvas.width;
-    const y = Math.random() * canvas.height * 0.5;
-
-    // Patlama sesi
-    if (soundEnabled) {
-        boom.currentTime = 0;
-        boom.play();
-    }
-
-    // Parçacık oluştur
-    for (let i = 0; i < 40; i++) {
-        particles.push(new Particle(x, y, `hsl(${Math.random()*360},100%,60%)`));
-    }
-}
-
-function loop() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    particles.forEach((p, i) => {
-        p.update();
-        p.draw();
-        if (p.alpha <= 0) particles.splice(i, 1);
-    });
-    requestAnimationFrame(loop);
-}
-loop();
-
-/* ==============================
-   KUTLAMAYI BAŞLAT 
-================================= */
-let running = false;
-document.getElementById("startBtn").onclick = () => {
-    if (running) return;
-    running = true;
-
-    setInterval(boomFirework, 800);
+document.getElementById('startBtn').onclick = () => {
+  ensureAudioContext();
+  if(!autoLaunch){
+    autoLaunch = setInterval(launchRocket, 650);
+  }
+  launchRocket();
+  launchRocket();
 };
-
 </script>
-
 </body>
 </html>
