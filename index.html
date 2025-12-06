@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Mutlu Yıllar 2026 — Emlak Grubu</title>
 
-  <!-- Cache Tamamen Kapalı (telefon için zorunlu) -->
+  <!-- Cache Tamamen Kapalı -->
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
   <meta http-equiv="Pragma" content="no-cache" />
   <meta http-equiv="Expires" content="0" />
@@ -13,7 +13,7 @@
   <style>
     body {
       margin: 0;
-      overflow: hidden;
+      overflow-x: hidden; /* DÜZELTİLDİ */
       background: radial-gradient(ellipse at bottom, #0f1720 0%, #020307 80%);
       font-family: Arial, sans-serif;
       color: white;
@@ -65,6 +65,7 @@
       color: white;
       user-select: none;
       pointer-events: none;
+      z-index: 9999; /* DÜZELTİLDİ */
       animation: fall linear forwards;
     }
 
@@ -78,6 +79,7 @@
       height: 6px;
       border-radius: 50%;
       pointer-events: none;
+      z-index: 9999;
     }
 
     .footer {
@@ -109,6 +111,7 @@
 
   <div class="footer">Bu sayfa: KEMALETTİN DUYAR tarafından hazırlanmıştır.</div>
 
+  <!-- ARKA PLAN MÜZİK -->
   <audio id="music" loop preload="auto"
    src="https://cdn.pixabay.com/download/audio/2022/03/01/audio_11ac392cda.mp3?filename=new-year-party-10980.mp3">
   </audio>
@@ -127,35 +130,17 @@
     }
     setInterval(createSnow, 120);
 
-    /* SES */
-    let soundEnabled = false;
-    let userActivated = false;
-
-    const launchSoundSrc =
-      "https://cdn.pixabay.com/download/audio/2022/03/15/audio_63aebaa9d8.mp3?filename=launch-rocket-113177.mp3";
-
-    const explodeSoundSrc =
-      "https://cdn.pixabay.com/download/audio/2022/03/15/audio_49709c8a31.mp3?filename=firework-1-113172.mp3";
-
+    /* SES – TEK GLOBAL AUDIO NESNESİ */
+    const launchSound = new Audio("https://cdn.pixabay.com/download/audio/2022/03/15/audio_63aebaa9d8.mp3?filename=launch-rocket-113177.mp3");
+    const explodeSound = new Audio("https://cdn.pixabay.com/download/audio/2022/03/15/audio_49709c8a31.mp3?filename=firework-1-113172.mp3");
     const bgMusic = document.getElementById("music");
 
-    function unlockSound() {
-      if (userActivated) return;
-      bgMusic.play().then(() => {
-        bgMusic.pause();
-        bgMusic.currentTime = 0;
-      });
-      userActivated = true;
-    }
+    let soundEnabled = false;
 
-    function playLaunch() {
-      if (!soundEnabled) return;
-      new Audio(launchSoundSrc).play().catch(()=>{});
-    }
-
-    function playExplosion() {
-      if (!soundEnabled) return;
-      new Audio(explodeSoundSrc).play().catch(()=>{});
+    function preloadAudio() {
+      launchSound.play().then(()=>launchSound.pause());
+      explodeSound.play().then(()=>explodeSound.pause());
+      bgMusic.play().then(()=>bgMusic.pause());
     }
 
     /* HAVAİ FİŞEK */
@@ -183,16 +168,17 @@
     }
 
     function startShow() {
-      unlockSound();
-      if (soundEnabled) bgMusic.play().catch(()=>{});
+      preloadAudio();
+
+      if (soundEnabled) bgMusic.play();
 
       for (let i = 0; i < 10; i++) {
         setTimeout(() => {
           const x = Math.random()*window.innerWidth*0.8 + window.innerWidth*0.1;
           const y = Math.random()*window.innerHeight*0.4 + 150;
 
-          playLaunch();
-          setTimeout(playExplosion, 500);
+          if (soundEnabled) launchSound.play();
+          setTimeout(()=>{ if (soundEnabled) explodeSound.play(); }, 500);
 
           explode(x, y);
 
@@ -204,9 +190,10 @@
 
     document.getElementById("muteBtn").onclick = () => {
       soundEnabled = !soundEnabled;
+
       if (soundEnabled) {
-        unlockSound();
-        bgMusic.play().catch(()=>{});
+        preloadAudio();
+        bgMusic.play();
         document.getElementById("muteBtn").innerText = "🔊 Ses Açık";
       } else {
         bgMusic.pause();
@@ -215,17 +202,17 @@
     };
   </script>
 
-  <!-- ✨ HTML DOSYASINI OTOMATİK VERSİYONLAYIP CACHE KIRAN SİSTEM -->
+  <!-- VERSİYON KONTROL SİSTEMİ -->
   <script>
   (function() {
     const key = "page_version";
-    const newVersion = Date.now().toString();
-    const oldVersion = sessionStorage.getItem(key);
+    const newV = Date.now().toString();
+    const oldV = sessionStorage.getItem(key);
 
-    if (oldVersion !== newVersion) {
-      sessionStorage.setItem(key, newVersion);
+    if (oldV !== newV) {
+      sessionStorage.setItem(key, newV);
       const clean = window.location.origin + window.location.pathname;
-      window.location.replace(clean + "?v=" + newVersion);
+      window.location.replace(clean + "?v=" + newV);
     }
   })();
   </script>
