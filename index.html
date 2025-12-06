@@ -241,32 +241,44 @@ drawFW();
 /* =====================================================
    🔊 SES KONTROLÜ – %100 TARAYICI UYUMLU (YENİ SÜRÜM)
 ===================================================== */
-let soundEnabled=false;
-const bgMusic=document.getElementById("bgMusic");
-const launchSnd=document.getElementById("launchSnd");
-const explodeSnd=document.getElementById("explodeSnd");
+/* ========== SES KONTROLÜ — GARANTİ ÇALIŞIR ========== */
+let soundEnabled = false;
 
-let audioCtx=null;
+const bgMusic   = document.getElementById("bgMusic");
+const launchSnd = document.getElementById("launchSnd");
+const explodeSnd= document.getElementById("explodeSnd");
+const soundBtn  = document.getElementById("soundBtn");
+
+// İlk kullanıcı tıklamasında ses izni açmak için
+function unlockAudio() {
+  const sounds = [bgMusic, launchSnd, explodeSnd];
+
+  sounds.forEach(a => {
+    a.volume = 1.0;
+    a.play().then(() => {
+      a.pause();      // hemen durdur
+      a.currentTime = 0;
+    }).catch(()=>{});
+  });
+
+  window.removeEventListener("click", unlockAudio);
+}
+
+window.addEventListener("click", unlockAudio, { once:true });
+
 
 function toggleSound(){
-  soundEnabled=!soundEnabled;
-  soundBtn.innerText=soundEnabled?"🔊 Ses Açık":"🔇 Ses Kapalı";
+  soundEnabled = !soundEnabled;
+  soundBtn.innerText = soundEnabled ? "🔊 Ses Açık" : "🔇 Ses Kapalı";
 
   if(soundEnabled){
-    if(!audioCtx){
-      audioCtx=new(AudioContext||webkitAudioContext)();
-    }
-
-    bgMusic.currentTime=0;
-    bgMusic.play().catch(err=>{ console.log("Müzik engellendi:",err); });
-
-    launchSnd.play().catch(()=>{});
-    explodeSnd.play().catch(()=>{});
-  }
-  else{
+    bgMusic.currentTime = 0;
+    bgMusic.play().catch(err => console.log("Engellendi:", err));
+  } else {
     bgMusic.pause();
   }
 }
+
 
 /* ========== KUTLAMAYI BAŞLAT ========== */
 document.getElementById("startBtn").addEventListener("click",()=>{
