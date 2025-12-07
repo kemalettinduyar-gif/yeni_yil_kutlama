@@ -96,17 +96,14 @@ canvas{
 </head>
 <body>
 
-<!-- Ses (patlama sesi Web Audio API ile üretilecek, dosya yok) -->
 <button id="musicBtn">🔇</button>
 <div id="musicLabel">Ses Kapalı</div>
 
-<!-- Başlık -->
 <div class="title">
   <h1>Mutlu Yıllar <span id="yearText"></span> 🎆</h1>
   <h2>Mutlu Yıllar <span id="groupText"></span></h2>
 </div>
 
-<!-- Canvas katmanları -->
 <canvas id="starsCanvas"></canvas>
 <canvas id="snowCanvas"></canvas>
 <canvas id="confettiCanvas"></canvas>
@@ -114,69 +111,92 @@ canvas{
 
 <div class="footer">Bu sayfa: Kemalettin Duyar tarafından hazırlanmıştır.</div>
 
-
 <script>
-/* ============================================================
-   URL PARAMETRELERİ
-============================================================ */
+/* URL Parametreleri */
 const url = new URLSearchParams(location.search);
 document.getElementById("yearText").textContent = url.get("year") || "2026";
 document.getElementById("groupText").textContent = url.get("group") || "Emlak Grubu";
 
-/* ============================================================
-   SES (Sadece ON/OFF — havai fişek patlamasında kullanılacak)
-============================================================ */
+/* SES ON/OFF */
 let soundEnabled = false;
 const musicBtn = document.getElementById("musicBtn");
 const musicLabel = document.getElementById("musicLabel");
 
 musicBtn.onclick = () => {
     soundEnabled = !soundEnabled;
-    if(soundEnabled){
-        musicBtn.textContent = "🔊";
-        musicLabel.textContent = "Ses Açık";
-    } else {
-        musicBtn.textContent = "🔇";
-        musicLabel.textContent = "Ses Kapalı";
-    }
+    musicBtn.textContent = soundEnabled ? "🔊" : "🔇";
+    musicLabel.textContent = soundEnabled ? "Ses Açık" : "Ses Kapalı";
 };
 
 /* ============================================================
-   YAPAY PATLAMA SESİ (mp3 gerekmiyor)
+      TOK PATLAMA SESİ — GELİŞMİŞ "BOOM"
 ============================================================ */
-function playBoom(){
-    if(!soundEnabled) return;
+function playBoom() {
+    if (!soundEnabled) return;
 
     const audio = new (window.AudioContext || window.webkitAudioContext)();
+
+    /* 1) Tok bass çekirdeği */
     const osc = audio.createOscillator();
     const gain = audio.createGain();
 
-    osc.type = "triangle";
-    osc.frequency.setValueAtTime(120, audio.currentTime);
-    osc.frequency.exponentialRampToValueAtTime(1, audio.currentTime + 0.35);
+    osc.type = "sine";
+    osc.frequency.setValueAtTime(55, audio.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(18, audio.currentTime + 0.35);
 
-    gain.gain.setValueAtTime(1, audio.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.01, audio.currentTime + 0.35);
+    gain.gain.setValueAtTime(2.8, audio.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, audio.currentTime + 0.35);
 
     osc.connect(gain);
     gain.connect(audio.destination);
-
     osc.start();
     osc.stop(audio.currentTime + 0.35);
+
+    /* 2) Gürültü patlaması */
+    const bufferSize = 2 * audio.sampleRate;
+    const noiseBuffer = audio.createBuffer(1, bufferSize, audio.sampleRate);
+    const data = noiseBuffer.getChannelData(0);
+
+    for (let i = 0; i < bufferSize; i++) {
+        data[i] = (Math.random() * 2 - 1) * (1 - i / bufferSize) * 1.4;
+    }
+
+    const noise = audio.createBufferSource();
+    noise.buffer = noiseBuffer;
+
+    const noiseGain = audio.createGain();
+    noiseGain.gain.setValueAtTime(2.4, audio.currentTime);
+    noiseGain.gain.exponentialRampToValueAtTime(0.01, audio.currentTime + 0.5);
+
+    noise.connect(noiseGain);
+    noiseGain.connect(audio.destination);
+    noise.start();
+    noise.stop(audio.currentTime + 0.5);
+
+    /* 3) Punch efekti */
+    const punchOsc = audio.createOscillator();
+    const punchGain = audio.createGain();
+
+    punchOsc.type = "square";
+    punchOsc.frequency.setValueAtTime(180, audio.currentTime);
+
+    punchGain.gain.setValueAtTime(0.9, audio.currentTime);
+    punchGain.gain.exponentialRampToValueAtTime(0.01, audio.currentTime + 0.12);
+
+    punchOsc.connect(punchGain);
+    punchGain.connect(audio.destination);
+
+    punchOsc.start();
+    punchOsc.stop(audio.currentTime + 0.12);
 }
 
-/* ============================================================
-   CANVAS AYARLARI
-============================================================ */
+/* CANVAS AYARLARI */
 const snowCanvas = document.getElementById("snowCanvas");
 const snowCtx = snowCanvas.getContext("2d");
-
 const fwCanvas = document.getElementById("fireworksCanvas");
 const fwCtx = fwCanvas.getContext("2d");
-
 const starsCanvas = document.getElementById("starsCanvas");
 const starsCtx = starsCanvas.getContext("2d");
-
 const confCanvas = document.getElementById("confettiCanvas");
 const confCtx = confCanvas.getContext("2d");
 
@@ -193,16 +213,14 @@ function resizeAll(){
 resizeAll();
 addEventListener("resize", resizeAll);
 
-/* ============================================================
-   KAYAN YILDIZLAR
-============================================================ */
+/* Yıldızlar */
 let stars = [];
 for(let i=0;i<120;i++){
   stars.push({
-    x: Math.random()*innerWidth,
-    y: Math.random()*innerHeight,
-    s: Math.random()*2,
-    v: 0.2 + Math.random()*0.6
+    x:Math.random()*innerWidth,
+    y:Math.random()*innerHeight,
+    s:Math.random()*2,
+    v:0.2 + Math.random()*0.6
   });
 }
 function drawStars(){
@@ -210,22 +228,19 @@ function drawStars(){
   starsCtx.fillStyle="white";
 
   for(let st of stars){
-    starsCtx.fillRect(st.x, st.y, st.s, st.s);
-    st.x += st.v;
-    st.y += st.v*0.3;
-
-    if(st.x > innerWidth || st.y > innerHeight){
-      st.x = Math.random()*innerWidth;
-      st.y = -10;
+    starsCtx.fillRect(st.x,st.y,st.s,st.s);
+    st.x+=st.v;
+    st.y+=st.v*0.3;
+    if(st.x>innerWidth || st.y>innerHeight){
+      st.x=Math.random()*innerWidth;
+      st.y=-10;
     }
   }
   requestAnimationFrame(drawStars);
 }
 drawStars();
 
-/* ============================================================
-   KAR YAĞIŞI
-============================================================ */
+/* Kar */
 let flakes=[];
 for(let i=0;i<250;i++){
   flakes.push({
@@ -244,13 +259,12 @@ function drawSnow(){
   for(let f of flakes){
     snowCtx.moveTo(f.x,f.y);
     snowCtx.arc(f.x,f.y,f.r,0,Math.PI*2);
-
     f.y+=f.vy;
     f.x+=f.vx + Math.sin(f.y/60)*0.3;
 
-    if(f.y > innerHeight){
-      f.y = -10;
-      f.x = Math.random()*innerWidth;
+    if(f.y>innerHeight){
+      f.y=-10;
+      f.x=Math.random()*innerWidth;
     }
   }
   snowCtx.fill();
@@ -258,10 +272,8 @@ function drawSnow(){
 }
 drawSnow();
 
-/* ============================================================
-   KONFETİ YAĞMURU
-============================================================ */
-let confetti = [];
+/* Konfeti */
+let confetti=[];
 for(let i=0;i<180;i++){
   confetti.push({
     x:Math.random()*innerWidth,
@@ -276,20 +288,17 @@ function drawConfetti(){
   for(let c of confetti){
     confCtx.fillStyle=c.color;
     confCtx.fillRect(c.x,c.y,c.r,c.r);
-
     c.y+=c.vy;
-    if(c.y > innerHeight){
-      c.y = -10;
-      c.x = Math.random()*innerWidth;
+    if(c.y>innerHeight){
+      c.y=-10;
+      c.x=Math.random()*innerWidth;
     }
   }
   requestAnimationFrame(drawConfetti);
 }
 drawConfetti();
 
-/* ============================================================
-   HAVAİ FİŞEKLER (SES + GÖRSEL)
-============================================================ */
+/* Havai fişek */
 let rockets=[], particles=[];
 
 function launch(){
@@ -302,7 +311,7 @@ function launch(){
 }
 
 function explode(x,y){
-  playBoom(); // *** SES BURADA ÇALIŞIYOR ***
+  playBoom(); // SES BURADA
 
   for(let i=0;i<60;i++){
     const a=Math.random()*Math.PI*2;
@@ -323,12 +332,12 @@ function drawFW(){
 
   for(let i=rockets.length-1;i>=0;i--){
     let r=rockets[i];
-    r.y -= r.s;
+    r.y-=r.s;
 
     fwCtx.fillStyle="white";
     fwCtx.fillRect(r.x,r.y,3,8);
 
-    if(r.y <= r.ty){
+    if(r.y<=r.ty){
       explode(r.x,r.y);
       rockets.splice(i,1);
     }
@@ -354,8 +363,8 @@ function drawFW(){
 }
 drawFW();
 
-/* Her 1 saniyede bir havai fişek */
 setInterval(launch, 1000);
 </script>
+
 </body>
 </html>
