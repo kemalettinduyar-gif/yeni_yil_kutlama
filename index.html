@@ -19,7 +19,9 @@
             const newV = Date.now().toString();
             sessionStorage.setItem(KEY, newV);
             const clean = window.location.origin + window.location.pathname;
-            window.location.href = clean + "?v=" + newV;
+            // window.location.href = clean + "?v=" + newV; 
+            window.location.replace(clean + "?v=" + newV);
+
           }
         } catch(e){ }
       }, 400);
