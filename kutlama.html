@@ -129,65 +129,65 @@ musicBtn.onclick = () => {
 };
 
 /* ============================================================
-      TOK PATLAMA SESİ — GELİŞMİŞ "BOOM"
+      UZUN, TOK ve DERİN PATLAMA — SES EFEKTİ
 ============================================================ */
 function playBoom() {
     if (!soundEnabled) return;
 
     const audio = new (window.AudioContext || window.webkitAudioContext)();
 
-    /* 1) Tok bass çekirdeği */
+    /* 1) Tok bass vuruş */
     const osc = audio.createOscillator();
     const gain = audio.createGain();
 
     osc.type = "sine";
-    osc.frequency.setValueAtTime(55, audio.currentTime);
-    osc.frequency.exponentialRampToValueAtTime(18, audio.currentTime + 0.35);
+    osc.frequency.setValueAtTime(60, audio.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(18, audio.currentTime + 0.55);
 
-    gain.gain.setValueAtTime(2.8, audio.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, audio.currentTime + 0.35);
+    gain.gain.setValueAtTime(3.5, audio.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, audio.currentTime + 0.55);
 
     osc.connect(gain);
     gain.connect(audio.destination);
     osc.start();
-    osc.stop(audio.currentTime + 0.35);
+    osc.stop(audio.currentTime + 0.55);
 
-    /* 2) Gürültü patlaması */
+    /* 2) Gürültü patlaması (uzatıldı) */
     const bufferSize = 2 * audio.sampleRate;
     const noiseBuffer = audio.createBuffer(1, bufferSize, audio.sampleRate);
     const data = noiseBuffer.getChannelData(0);
 
     for (let i = 0; i < bufferSize; i++) {
-        data[i] = (Math.random() * 2 - 1) * (1 - i / bufferSize) * 1.4;
+        data[i] = (Math.random() * 2 - 1) * (1 - i / bufferSize) * 1.8;
     }
 
     const noise = audio.createBufferSource();
     noise.buffer = noiseBuffer;
 
     const noiseGain = audio.createGain();
-    noiseGain.gain.setValueAtTime(2.4, audio.currentTime);
-    noiseGain.gain.exponentialRampToValueAtTime(0.01, audio.currentTime + 0.5);
+    noiseGain.gain.setValueAtTime(3.0, audio.currentTime);
+    noiseGain.gain.exponentialRampToValueAtTime(0.01, audio.currentTime + 0.85);
 
     noise.connect(noiseGain);
     noiseGain.connect(audio.destination);
     noise.start();
-    noise.stop(audio.currentTime + 0.5);
+    noise.stop(audio.currentTime + 0.85);
 
-    /* 3) Punch efekti */
+    /* 3) Punch */
     const punchOsc = audio.createOscillator();
     const punchGain = audio.createGain();
 
     punchOsc.type = "square";
-    punchOsc.frequency.setValueAtTime(180, audio.currentTime);
+    punchOsc.frequency.setValueAtTime(200, audio.currentTime);
 
-    punchGain.gain.setValueAtTime(0.9, audio.currentTime);
-    punchGain.gain.exponentialRampToValueAtTime(0.01, audio.currentTime + 0.12);
+    punchGain.gain.setValueAtTime(1.0, audio.currentTime);
+    punchGain.gain.exponentialRampToValueAtTime(0.01, audio.currentTime + 0.15);
 
     punchOsc.connect(punchGain);
     punchGain.connect(audio.destination);
 
     punchOsc.start();
-    punchOsc.stop(audio.currentTime + 0.12);
+    punchOsc.stop(audio.currentTime + 0.15);
 }
 
 /* CANVAS AYARLARI */
@@ -215,7 +215,7 @@ addEventListener("resize", resizeAll);
 
 /* Yıldızlar */
 let stars = [];
-for(let i=0;i<120;i++){
+for(let i=0;i<160;i++){
   stars.push({
     x:Math.random()*innerWidth,
     y:Math.random()*innerHeight,
@@ -301,27 +301,32 @@ drawConfetti();
 /* Havai fişek */
 let rockets=[], particles=[];
 
+/* ---> 3’LÜ ROKET FIRLATMA <--- */
 function launch(){
-  rockets.push({
-    x:Math.random()*fwCanvas.width,
-    y:fwCanvas.height+10,
-    ty:60 + Math.random()*(fwCanvas.height*0.45),
-    s:6 + Math.random()*3
-  });
+  for(let i=0;i<3;i++){
+    rockets.push({
+      x:Math.random()*fwCanvas.width,
+      y:fwCanvas.height+10,
+      ty:80 + Math.random()*(fwCanvas.height*0.45),
+      s:7 + Math.random()*4
+    });
+  }
 }
 
+/* ---> DAHA PARLAK, DAHA BÜYÜK ve 2 KAT PARÇACIK <--- */
 function explode(x,y){
-  playBoom(); // SES BURADA
+  playBoom();
 
-  for(let i=0;i<60;i++){
+  for(let i=0;i<120;i++){
     const a=Math.random()*Math.PI*2;
     const sp=1+Math.random()*4;
     particles.push({
       x,y,
       vx:Math.cos(a)*sp,
       vy:Math.sin(a)*sp,
-      life:60,
+      life:90,
       age:0,
+      size:3 + Math.random()*3,
       color:`hsl(${Math.random()*360},100%,70%)`
     });
   }
@@ -335,7 +340,7 @@ function drawFW(){
     r.y-=r.s;
 
     fwCtx.fillStyle="white";
-    fwCtx.fillRect(r.x,r.y,3,8);
+    fwCtx.fillRect(r.x,r.y,4,10);
 
     if(r.y<=r.ty){
       explode(r.x,r.y);
@@ -353,7 +358,7 @@ function drawFW(){
     let a=Math.max(0,1-(p.age/p.life));
     fwCtx.fillStyle=p.color;
     fwCtx.globalAlpha=a;
-    fwCtx.fillRect(p.x,p.y,3,3);
+    fwCtx.fillRect(p.x,p.y,p.size,p.size);
     fwCtx.globalAlpha=1;
 
     if(p.age>=p.life) particles.splice(i,1);
@@ -363,7 +368,7 @@ function drawFW(){
 }
 drawFW();
 
-setInterval(launch, 1000);
+setInterval(launch, 900);
 </script>
 
 </body>
