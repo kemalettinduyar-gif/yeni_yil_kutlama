@@ -121,7 +121,6 @@ musicBtn.onclick = async () => {
     soundEnabled = !soundEnabled;
     musicBtn.textContent = soundEnabled ? "🔊" : "🔇";
     musicLabel.textContent = soundEnabled ? "Ses Açık" : "Ses Kapalı";
-    // AudioContext'i kullanıcı etkileşimi ile başlat
     if(soundEnabled && audioCtx.state === 'suspended') {
         await audioCtx.resume();
     }
@@ -130,51 +129,53 @@ musicBtn.onclick = async () => {
 /* Tek bir AudioContext oluştur */
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
-/* TOK PATLAMA SESİ */
+/* TOK PATLAMA SESİ - AYRICA GRUPLAMA YAPILDI */
 function playBoom(){
     if(!soundEnabled) return;
 
-    // Bass
+    const now = audioCtx.currentTime;
+
+    // Bass vuruş
     const osc = audioCtx.createOscillator();
     const gain = audioCtx.createGain();
     osc.type = "sine";
-    osc.frequency.setValueAtTime(60, audioCtx.currentTime);
-    osc.frequency.exponentialRampToValueAtTime(18, audioCtx.currentTime + 0.8);
-    gain.gain.setValueAtTime(3.5, audioCtx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.8);
+    osc.frequency.setValueAtTime(60, now);
+    osc.frequency.exponentialRampToValueAtTime(18, now + 0.5);
+    gain.gain.setValueAtTime(2.0, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
     osc.connect(gain);
     gain.connect(audioCtx.destination);
-    osc.start();
-    osc.stop(audioCtx.currentTime + 0.8);
+    osc.start(now);
+    osc.stop(now + 0.5);
 
-    // Gürültü
-    const bufferSize = 2 * audioCtx.sampleRate;
+    // Gürültü patlaması
+    const bufferSize = audioCtx.sampleRate * 0.5;
     const noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
     const data = noiseBuffer.getChannelData(0);
-    for (let i=0;i<bufferSize;i++){
-        data[i]=(Math.random()*2-1)*(1-i/bufferSize)*2.0;
+    for (let i = 0; i < bufferSize; i++) {
+        data[i] = (Math.random() * 2 - 1) * (1 - i / bufferSize) * 1.5;
     }
     const noise = audioCtx.createBufferSource();
-    noise.buffer=noiseBuffer;
+    noise.buffer = noiseBuffer;
     const noiseGain = audioCtx.createGain();
-    noiseGain.gain.setValueAtTime(3.0, audioCtx.currentTime);
-    noiseGain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime+1.0);
+    noiseGain.gain.setValueAtTime(1.5, now);
+    noiseGain.gain.exponentialRampToValueAtTime(0.01, now + 0.5);
     noise.connect(noiseGain);
     noiseGain.connect(audioCtx.destination);
-    noise.start();
-    noise.stop(audioCtx.currentTime+1.0);
+    noise.start(now);
+    noise.stop(now + 0.5);
 
     // Punch
     const punchOsc = audioCtx.createOscillator();
     const punchGain = audioCtx.createGain();
-    punchOsc.type="square";
-    punchOsc.frequency.setValueAtTime(200,audioCtx.currentTime);
-    punchGain.gain.setValueAtTime(1.0,audioCtx.currentTime);
-    punchGain.gain.exponentialRampToValueAtTime(0.01,audioCtx.currentTime+0.2);
+    punchOsc.type = "square";
+    punchOsc.frequency.setValueAtTime(200, now);
+    punchGain.gain.setValueAtTime(0.6, now);
+    punchGain.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
     punchOsc.connect(punchGain);
     punchGain.connect(audioCtx.destination);
-    punchOsc.start();
-    punchOsc.stop(audioCtx.currentTime+0.2);
+    punchOsc.start(now);
+    punchOsc.stop(now + 0.15);
 }
 
 /* CANVAS AYARLARI */
@@ -243,13 +244,13 @@ let rockets=[],particles=[];
 
 /* ROCKET SAYISI ARTIRILDI VE HIZ DÜŞÜRÜLDÜ */
 function launch(){
-    let count = 12 + Math.floor(Math.random()*5); // aynı anda 12-16 roket
+    let count = 12 + Math.floor(Math.random()*5);
     for(let i=0;i<count;i++){
         rockets.push({
             x:Math.random()*fwCanvas.width,
             y:fwCanvas.height+10,
             ty:80 + Math.random()*(fwCanvas.height*0.45),
-            s:3 + Math.random()*2   // hız 3-5 piksel/frame
+            s:3 + Math.random()*2
         });
     }
 }
@@ -300,8 +301,7 @@ function drawFW(){
 }
 drawFW();
 
-// Daha hızlı ve yoğun patlama
-setInterval(launch, 900); // her 0.9 saniyede yeni roketler
+setInterval(launch, 900);
 </script>
 
 </body>
