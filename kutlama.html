@@ -126,39 +126,38 @@ musicBtn.onclick = async () => {
     }
 };
 
-/* Tek bir AudioContext oluştur */
+/* Tek bir AudioContext */
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
-/* TOK PATLAMA SESİ - AYRICA GRUPLAMA YAPILDI */
+/* PATLAMA SESİ */
 function playBoom(){
     if(!soundEnabled) return;
-
     const now = audioCtx.currentTime;
 
-    // Bass vuruş
+    // Bass
     const osc = audioCtx.createOscillator();
     const gain = audioCtx.createGain();
     osc.type = "sine";
     osc.frequency.setValueAtTime(60, now);
     osc.frequency.exponentialRampToValueAtTime(18, now + 0.5);
-    gain.gain.setValueAtTime(2.0, now);
+    gain.gain.setValueAtTime(1.5, now);
     gain.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
     osc.connect(gain);
     gain.connect(audioCtx.destination);
     osc.start(now);
     osc.stop(now + 0.5);
 
-    // Gürültü patlaması
+    // Gürültü
     const bufferSize = audioCtx.sampleRate * 0.5;
     const noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
     const data = noiseBuffer.getChannelData(0);
-    for (let i = 0; i < bufferSize; i++) {
-        data[i] = (Math.random() * 2 - 1) * (1 - i / bufferSize) * 1.5;
+    for(let i=0;i<bufferSize;i++){
+        data[i]=(Math.random()*2-1)*(1-i/bufferSize)*1.2;
     }
     const noise = audioCtx.createBufferSource();
-    noise.buffer = noiseBuffer;
+    noise.buffer=noiseBuffer;
     const noiseGain = audioCtx.createGain();
-    noiseGain.gain.setValueAtTime(1.5, now);
+    noiseGain.gain.setValueAtTime(1.2, now);
     noiseGain.gain.exponentialRampToValueAtTime(0.01, now + 0.5);
     noise.connect(noiseGain);
     noiseGain.connect(audioCtx.destination);
@@ -168,9 +167,9 @@ function playBoom(){
     // Punch
     const punchOsc = audioCtx.createOscillator();
     const punchGain = audioCtx.createGain();
-    punchOsc.type = "square";
+    punchOsc.type="square";
     punchOsc.frequency.setValueAtTime(200, now);
-    punchGain.gain.setValueAtTime(0.6, now);
+    punchGain.gain.setValueAtTime(0.4, now);
     punchGain.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
     punchOsc.connect(punchGain);
     punchGain.connect(audioCtx.destination);
@@ -242,21 +241,21 @@ drawSnow();
 /* Havai fişek */
 let rockets=[],particles=[];
 
-/* ROCKET SAYISI ARTIRILDI VE HIZ DÜŞÜRÜLDÜ */
+/* ROCKET LAUNCH */
 function launch(){
-    let count = 12 + Math.floor(Math.random()*5);
+    let count = 8 + Math.floor(Math.random()*3); // 8-10 roket
     for(let i=0;i<count;i++){
         rockets.push({
             x:Math.random()*fwCanvas.width,
             y:fwCanvas.height+10,
             ty:80 + Math.random()*(fwCanvas.height*0.45),
-            s:3 + Math.random()*2
+            s:2.5 + Math.random()*2
         });
     }
 }
 
+/* Patlama */
 function explode(x,y){
-    playBoom();
     for(let i=0;i<120;i++){
         const a=Math.random()*Math.PI*2;
         const sp=1+Math.random()*4;
@@ -270,8 +269,14 @@ function explode(x,y){
             color:`hsl(${Math.random()*360},100%,70%)`
         });
     }
+    // Patlama sesini rastgele gecikmeli çal
+    if(soundEnabled){
+        const delay = Math.random()*0.3;
+        setTimeout(()=>playBoom(), delay*1000);
+    }
 }
 
+/* DRAW FIREWORKS */
 function drawFW(){
     fwCtx.clearRect(0,0,fwCanvas.width,fwCanvas.height);
     for(let i=rockets.length-1;i>=0;i--){
@@ -301,7 +306,8 @@ function drawFW(){
 }
 drawFW();
 
-setInterval(launch, 900);
+// Daha doğal ve dağıtılmış patlamalar
+setInterval(launch, 1000);
 </script>
 
 </body>
