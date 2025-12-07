@@ -117,61 +117,64 @@ let soundEnabled = false;
 const musicBtn = document.getElementById("musicBtn");
 const musicLabel = document.getElementById("musicLabel");
 
-musicBtn.onclick = () => {
+musicBtn.onclick = async () => {
     soundEnabled = !soundEnabled;
     musicBtn.textContent = soundEnabled ? "🔊" : "🔇";
     musicLabel.textContent = soundEnabled ? "Ses Açık" : "Ses Kapalı";
+    // AudioContext'i kullanıcı etkileşimi ile başlat
+    if(soundEnabled && audioCtx.state === 'suspended') {
+        await audioCtx.resume();
+    }
 };
 
-/* ============================================================
-     UZUN, TOK PATLAMA SESİ — 1 SANİYEYE YAKIN
-============================================================ */
-function playBoom() {
-    if (!soundEnabled) return;
+/* Tek bir AudioContext oluştur */
+const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
-    const audio = new (window.AudioContext || window.webkitAudioContext)();
+/* TOK PATLAMA SESİ */
+function playBoom(){
+    if(!soundEnabled) return;
 
-    // Bass vuruş
-    const osc = audio.createOscillator();
-    const gain = audio.createGain();
+    // Bass
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
     osc.type = "sine";
-    osc.frequency.setValueAtTime(60, audio.currentTime);
-    osc.frequency.exponentialRampToValueAtTime(18, audio.currentTime + 0.8);
-    gain.gain.setValueAtTime(3.5, audio.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, audio.currentTime + 0.8);
+    osc.frequency.setValueAtTime(60, audioCtx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(18, audioCtx.currentTime + 0.8);
+    gain.gain.setValueAtTime(3.5, audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.8);
     osc.connect(gain);
-    gain.connect(audio.destination);
+    gain.connect(audioCtx.destination);
     osc.start();
-    osc.stop(audio.currentTime + 0.8);
+    osc.stop(audioCtx.currentTime + 0.8);
 
-    // Gürültü patlaması
-    const bufferSize = 2 * audio.sampleRate;
-    const noiseBuffer = audio.createBuffer(1, bufferSize, audio.sampleRate);
+    // Gürültü
+    const bufferSize = 2 * audioCtx.sampleRate;
+    const noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
     const data = noiseBuffer.getChannelData(0);
     for (let i=0;i<bufferSize;i++){
         data[i]=(Math.random()*2-1)*(1-i/bufferSize)*2.0;
     }
-    const noise = audio.createBufferSource();
+    const noise = audioCtx.createBufferSource();
     noise.buffer=noiseBuffer;
-    const noiseGain = audio.createGain();
-    noiseGain.gain.setValueAtTime(3.0, audio.currentTime);
-    noiseGain.gain.exponentialRampToValueAtTime(0.01, audio.currentTime+1.0);
+    const noiseGain = audioCtx.createGain();
+    noiseGain.gain.setValueAtTime(3.0, audioCtx.currentTime);
+    noiseGain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime+1.0);
     noise.connect(noiseGain);
-    noiseGain.connect(audio.destination);
+    noiseGain.connect(audioCtx.destination);
     noise.start();
-    noise.stop(audio.currentTime+1.0);
+    noise.stop(audioCtx.currentTime+1.0);
 
     // Punch
-    const punchOsc = audio.createOscillator();
-    const punchGain = audio.createGain();
+    const punchOsc = audioCtx.createOscillator();
+    const punchGain = audioCtx.createGain();
     punchOsc.type="square";
-    punchOsc.frequency.setValueAtTime(200,audio.currentTime);
-    punchGain.gain.setValueAtTime(1.0,audio.currentTime);
-    punchGain.gain.exponentialRampToValueAtTime(0.01,audio.currentTime+0.2);
+    punchOsc.frequency.setValueAtTime(200,audioCtx.currentTime);
+    punchGain.gain.setValueAtTime(1.0,audioCtx.currentTime);
+    punchGain.gain.exponentialRampToValueAtTime(0.01,audioCtx.currentTime+0.2);
     punchOsc.connect(punchGain);
-    punchGain.connect(audio.destination);
+    punchGain.connect(audioCtx.destination);
     punchOsc.start();
-    punchOsc.stop(audio.currentTime+0.2);
+    punchOsc.stop(audioCtx.currentTime+0.2);
 }
 
 /* CANVAS AYARLARI */
@@ -238,15 +241,15 @@ drawSnow();
 /* Havai fişek */
 let rockets=[],particles=[];
 
-/* ---> ROCKET SAYISI ARTIRILDI <--- */
+/* ROCKET SAYISI ARTIRILDI VE HIZ DÜŞÜRÜLDÜ */
 function launch(){
-    let count = 12 + Math.floor(Math.random()*5); // 12-16 roket aynı anda fırlayacak
+    let count = 12 + Math.floor(Math.random()*5); // aynı anda 12-16 roket
     for(let i=0;i<count;i++){
         rockets.push({
             x:Math.random()*fwCanvas.width,
             y:fwCanvas.height+10,
             ty:80 + Math.random()*(fwCanvas.height*0.45),
-            s:7 + Math.random()*4
+            s:3 + Math.random()*2   // hız 3-5 piksel/frame
         });
     }
 }
