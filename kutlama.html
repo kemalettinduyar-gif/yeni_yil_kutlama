@@ -16,7 +16,6 @@ html,body{
   color:white;
 }
 
-/* Müzik ikonu */
 #musicBtn{
   position:fixed;
   top:18px;
@@ -43,7 +42,6 @@ html,body{
   z-index:200;
 }
 
-/* Başlık */
 .title{
   position:fixed;
   top:28px;
@@ -66,7 +64,6 @@ html,body{
   text-shadow:0 0 10px #000;
 }
 
-/* Footer */
 .footer{
   position:fixed;
   bottom:16px;
@@ -79,7 +76,6 @@ html,body{
   z-index:20;
 }
 
-/* Canvas’lar */
 canvas{
   position:fixed;
   left:0;
@@ -91,7 +87,7 @@ canvas{
 #snowCanvas{ z-index:10; }
 #fireworksCanvas{ z-index:20; }
 #starsCanvas{ z-index:5; }
-#confettiCanvas{ display:none; } /* Konfetiyi kapattık */
+#confettiCanvas{ display:none; }
 </style>
 </head>
 <body>
@@ -128,200 +124,180 @@ musicBtn.onclick = () => {
 };
 
 /* ============================================================
-   TOK, UZUN PATLAMA SESİ (DAHA DERİN, YANKISIZ)
+     UZUN, TOK PATLAMA SESİ — 1 SANİYEYE YAKIN
 ============================================================ */
 function playBoom() {
     if (!soundEnabled) return;
 
     const audio = new (window.AudioContext || window.webkitAudioContext)();
 
-    // 1) Bass
+    // Bass vuruş
     const osc = audio.createOscillator();
     const gain = audio.createGain();
     osc.type = "sine";
-    osc.frequency.setValueAtTime(50, audio.currentTime);
-    osc.frequency.exponentialRampToValueAtTime(20, audio.currentTime + 0.6);
-    gain.gain.setValueAtTime(4, audio.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, audio.currentTime + 0.6);
+    osc.frequency.setValueAtTime(60, audio.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(18, audio.currentTime + 0.8);
+    gain.gain.setValueAtTime(3.5, audio.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, audio.currentTime + 0.8);
     osc.connect(gain);
     gain.connect(audio.destination);
     osc.start();
-    osc.stop(audio.currentTime + 0.6);
+    osc.stop(audio.currentTime + 0.8);
 
-    // 2) Gürültü patlaması
+    // Gürültü patlaması
     const bufferSize = 2 * audio.sampleRate;
     const noiseBuffer = audio.createBuffer(1, bufferSize, audio.sampleRate);
     const data = noiseBuffer.getChannelData(0);
-    for (let i = 0; i < bufferSize; i++) {
-        data[i] = (Math.random() * 2 - 1) * (1 - i / bufferSize) * 1.5;
+    for (let i=0;i<bufferSize;i++){
+        data[i]=(Math.random()*2-1)*(1-i/bufferSize)*2.0;
     }
     const noise = audio.createBufferSource();
-    noise.buffer = noiseBuffer;
+    noise.buffer=noiseBuffer;
     const noiseGain = audio.createGain();
-    noiseGain.gain.setValueAtTime(2.5, audio.currentTime);
-    noiseGain.gain.exponentialRampToValueAtTime(0.01, audio.currentTime + 0.8);
+    noiseGain.gain.setValueAtTime(3.0, audio.currentTime);
+    noiseGain.gain.exponentialRampToValueAtTime(0.01, audio.currentTime+1.0);
     noise.connect(noiseGain);
     noiseGain.connect(audio.destination);
     noise.start();
-    noise.stop(audio.currentTime + 0.8);
+    noise.stop(audio.currentTime+1.0);
 
-    // 3) Punch
+    // Punch
     const punchOsc = audio.createOscillator();
     const punchGain = audio.createGain();
-    punchOsc.type = "square";
-    punchOsc.frequency.setValueAtTime(180, audio.currentTime);
-    punchGain.gain.setValueAtTime(0.8, audio.currentTime);
-    punchGain.gain.exponentialRampToValueAtTime(0.01, audio.currentTime + 0.12);
+    punchOsc.type="square";
+    punchOsc.frequency.setValueAtTime(200,audio.currentTime);
+    punchGain.gain.setValueAtTime(1.0,audio.currentTime);
+    punchGain.gain.exponentialRampToValueAtTime(0.01,audio.currentTime+0.2);
     punchOsc.connect(punchGain);
     punchGain.connect(audio.destination);
     punchOsc.start();
-    punchOsc.stop(audio.currentTime + 0.12);
+    punchOsc.stop(audio.currentTime+0.2);
 }
 
 /* CANVAS AYARLARI */
-const snowCanvas = document.getElementById("snowCanvas");
-const snowCtx = snowCanvas.getContext("2d");
-const fwCanvas = document.getElementById("fireworksCanvas");
-const fwCtx = fwCanvas.getContext("2d");
-const starsCanvas = document.getElementById("starsCanvas");
-const starsCtx = starsCanvas.getContext("2d");
+const snowCanvas=document.getElementById("snowCanvas");
+const snowCtx=snowCanvas.getContext("2d");
+const fwCanvas=document.getElementById("fireworksCanvas");
+const fwCtx=fwCanvas.getContext("2d");
+const starsCanvas=document.getElementById("starsCanvas");
+const starsCtx=starsCanvas.getContext("2d");
 
 function resizeAll(){
-  snowCanvas.width = innerWidth;
-  snowCanvas.height = innerHeight;
-  fwCanvas.width = innerWidth;
-  fwCanvas.height = innerHeight;
-  starsCanvas.width = innerWidth;
-  starsCanvas.height = innerHeight;
+    snowCanvas.width=innerWidth;
+    snowCanvas.height=innerHeight;
+    fwCanvas.width=innerWidth;
+    fwCanvas.height=innerHeight;
+    starsCanvas.width=innerWidth;
+    starsCanvas.height=innerHeight;
 }
 resizeAll();
-addEventListener("resize", resizeAll);
+addEventListener("resize",resizeAll);
 
 /* Yıldızlar */
-let stars = [];
+let stars=[];
 for(let i=0;i<160;i++){
-  stars.push({
-    x:Math.random()*innerWidth,
-    y:Math.random()*innerHeight,
-    s:Math.random()*2,
-    v:0.2 + Math.random()*0.6
-  });
+    stars.push({x:Math.random()*innerWidth,y:Math.random()*innerHeight,s:Math.random()*2,v:0.2+Math.random()*0.6});
 }
 function drawStars(){
-  starsCtx.clearRect(0,0,starsCanvas.width,starsCanvas.height);
-  starsCtx.fillStyle="white";
-  for(let st of stars){
-    starsCtx.fillRect(st.x,st.y,st.s,st.s);
-    st.x+=st.v;
-    st.y+=st.v*0.3;
-    if(st.x>innerWidth || st.y>innerHeight){
-      st.x=Math.random()*innerWidth;
-      st.y=-10;
+    starsCtx.clearRect(0,0,starsCanvas.width,starsCanvas.height);
+    starsCtx.fillStyle="white";
+    for(let st of stars){
+        starsCtx.fillRect(st.x,st.y,st.s,st.s);
+        st.x+=st.v;
+        st.y+=st.v*0.3;
+        if(st.x>innerWidth||st.y>innerHeight){
+            st.x=Math.random()*innerWidth;
+            st.y=-10;
+        }
     }
-  }
-  requestAnimationFrame(drawStars);
+    requestAnimationFrame(drawStars);
 }
 drawStars();
 
 /* Kar */
 let flakes=[];
 for(let i=0;i<250;i++){
-  flakes.push({
-    x:Math.random()*innerWidth,
-    y:Math.random()*innerHeight,
-    r:1+Math.random()*3,
-    vy:1+Math.random()*2,
-    vx:(Math.random()-0.5)*0.6
-  });
+    flakes.push({x:Math.random()*innerWidth,y:Math.random()*innerHeight,r:1+Math.random()*3,vy:1+Math.random()*2,vx:(Math.random()-0.5)*0.6});
 }
 function drawSnow(){
-  snowCtx.clearRect(0,0,snowCanvas.width,snowCanvas.height);
-  snowCtx.fillStyle="white";
-  snowCtx.beginPath();
-  for(let f of flakes){
-    snowCtx.moveTo(f.x,f.y);
-    snowCtx.arc(f.x,f.y,f.r,0,Math.PI*2);
-    f.y+=f.vy;
-    f.x+=f.vx + Math.sin(f.y/60)*0.3;
-    if(f.y>innerHeight){
-      f.y=-10;
-      f.x=Math.random()*innerWidth;
+    snowCtx.clearRect(0,0,snowCanvas.width,snowCanvas.height);
+    snowCtx.fillStyle="white";
+    snowCtx.beginPath();
+    for(let f of flakes){
+        snowCtx.moveTo(f.x,f.y);
+        snowCtx.arc(f.x,f.y,f.r,0,Math.PI*2);
+        f.y+=f.vy;
+        f.x+=f.vx+Math.sin(f.y/60)*0.3;
+        if(f.y>innerHeight){ f.y=-10; f.x=Math.random()*innerWidth; }
     }
-  }
-  snowCtx.fill();
-  requestAnimationFrame(drawSnow);
+    snowCtx.fill();
+    requestAnimationFrame(drawSnow);
 }
 drawSnow();
 
 /* Havai fişek */
-let rockets=[], particles=[];
+let rockets=[],particles=[];
 
-/* 3’lü roket fırlatma */
+/* ---> 5-6 ROCKET SAME TIME <--- */
 function launch(){
-  for(let i=0;i<3;i++){
-    rockets.push({
-      x:Math.random()*fwCanvas.width,
-      y:fwCanvas.height+10,
-      ty:80 + Math.random()*(fwCanvas.height*0.45),
-      s:7 + Math.random()*4
-    });
-  }
+    let count = 5 + Math.floor(Math.random()*2);
+    for(let i=0;i<count;i++){
+        rockets.push({
+            x:Math.random()*fwCanvas.width,
+            y:fwCanvas.height+10,
+            ty:80 + Math.random()*(fwCanvas.height*0.45),
+            s:7 + Math.random()*4
+        });
+    }
 }
 
-/* Büyük ve parlak patlama */
 function explode(x,y){
-  playBoom();
-  for(let i=0;i<120;i++){
-    const a=Math.random()*Math.PI*2;
-    const sp=1+Math.random()*4;
-    particles.push({
-      x,y,
-      vx:Math.cos(a)*sp,
-      vy:Math.sin(a)*sp,
-      life:90,
-      age:0,
-      size:3 + Math.random()*3,
-      color:`hsl(${Math.random()*360},100%,80%)`
-    });
-  }
+    playBoom();
+    for(let i=0;i<120;i++){
+        const a=Math.random()*Math.PI*2;
+        const sp=1+Math.random()*4;
+        particles.push({
+            x,y,
+            vx:Math.cos(a)*sp,
+            vy:Math.sin(a)*sp,
+            life:90,
+            age:0,
+            size:3+Math.random()*3,
+            color:`hsl(${Math.random()*360},100%,70%)`
+        });
+    }
 }
 
 function drawFW(){
-  fwCtx.clearRect(0,0,fwCanvas.width,fwCanvas.height);
-
-  for(let i=rockets.length-1;i>=0;i--){
-    let r=rockets[i];
-    r.y-=r.s;
-    fwCtx.fillStyle="white";
-    fwCtx.fillRect(r.x,r.y,4,10);
-
-    if(r.y<=r.ty){
-      explode(r.x,r.y);
-      rockets.splice(i,1);
+    fwCtx.clearRect(0,0,fwCanvas.width,fwCanvas.height);
+    for(let i=rockets.length-1;i>=0;i--){
+        let r=rockets[i];
+        r.y-=r.s;
+        fwCtx.fillStyle="white";
+        fwCtx.fillRect(r.x,r.y,4,10);
+        if(r.y<=r.ty){
+            explode(r.x,r.y);
+            rockets.splice(i,1);
+        }
     }
-  }
-
-  for(let i=particles.length-1;i>=0;i--){
-    let p=particles[i];
-    p.x+=p.vx;
-    p.y+=p.vy;
-    p.vy+=0.02;
-    p.age++;
-
-    let a=Math.max(0,1-(p.age/p.life));
-    fwCtx.fillStyle=p.color;
-    fwCtx.globalAlpha=a;
-    fwCtx.fillRect(p.x,p.y,p.size,p.size);
-    fwCtx.globalAlpha=1;
-
-    if(p.age>=p.life) particles.splice(i,1);
-  }
-
-  requestAnimationFrame(drawFW);
+    for(let i=particles.length-1;i>=0;i--){
+        let p=particles[i];
+        p.x+=p.vx;
+        p.y+=p.vy;
+        p.vy+=0.02;
+        p.age++;
+        let a=Math.max(0,1-(p.age/p.life));
+        fwCtx.fillStyle=p.color;
+        fwCtx.globalAlpha=a;
+        fwCtx.fillRect(p.x,p.y,p.size,p.size);
+        fwCtx.globalAlpha=1;
+        if(p.age>=p.life) particles.splice(i,1);
+    }
+    requestAnimationFrame(drawFW);
 }
 drawFW();
 
-setInterval(launch, 900);
+setInterval(launch, 1200);
 </script>
 
 </body>
