@@ -1,110 +1,370 @@
-let soundEnabled = true;
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Mutlu Yıllar</title>
 
+<style>
+html,body{
+  margin:0;
+  padding:0;
+  height:100%;
+  overflow:hidden;
+  background: radial-gradient(ellipse at bottom, #0a0f1f 0%, #00040c 80%);
+  font-family: Arial, Helvetica, sans-serif;
+  color:white;
+}
+
+/* Müzik ikonu */
+#musicBtn{
+  position:fixed;
+  top:18px;
+  right:18px;
+  width:50px;
+  height:50px;
+  background:rgba(255,255,255,0.15);
+  border:1px solid rgba(255,255,255,0.3);
+  backdrop-filter:blur(3px);
+  border-radius:50%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:24px;
+  cursor:pointer;
+  z-index:200;
+}
+#musicLabel{
+  position:fixed;
+  top:76px;
+  right:10px;
+  font-size:14px;
+  opacity:0.9;
+  z-index:200;
+}
+
+/* Başlık */
+.title{
+  position:fixed;
+  top:28px;
+  left:50%;
+  transform:translateX(-50%);
+  text-align:center;
+  z-index:100;
+}
+.title h1{
+  font-size:2.5rem;
+  color:#ffd24c;
+  margin:0;
+  text-shadow:0 0 14px #000;
+}
+.title h2{
+  margin:10px 0 0;
+  font-size:1.7rem;
+  opacity:.96;
+  letter-spacing:1.3px;
+  text-shadow:0 0 10px #000;
+}
+
+/* Footer */
+.footer{
+  position:fixed;
+  bottom:16px;
+  left:50%;
+  transform:translateX(-50%);
+  background:rgba(0,0,0,0.35);
+  padding:6px 14px;
+  border-radius:8px;
+  font-size:14px;
+  z-index:20;
+}
+
+/* Canvas’lar */
+canvas{
+  position:fixed;
+  left:0;
+  top:0;
+  width:100vw;
+  height:100vh;
+  pointer-events:none;
+}
+#snowCanvas{ z-index:10; }
+#fireworksCanvas{ z-index:20; }
+#starsCanvas{ z-index:5; }
+#confettiCanvas{ z-index:25; }
+</style>
+</head>
+<body>
+
+<button id="musicBtn">🔇</button>
+<div id="musicLabel">Ses Kapalı</div>
+
+<div class="title">
+  <h1>Mutlu Yıllar <span id="yearText"></span> 🎆</h1>
+  <h2>Mutlu Yıllar <span id="groupText"></span></h2>
+</div>
+
+<canvas id="starsCanvas"></canvas>
+<canvas id="snowCanvas"></canvas>
+<canvas id="confettiCanvas"></canvas>
+<canvas id="fireworksCanvas"></canvas>
+
+<div class="footer">Bu sayfa: Kemalettin Duyar tarafından hazırlanmıştır.</div>
+
+<script>
+/* URL Parametreleri */
+const url = new URLSearchParams(location.search);
+document.getElementById("yearText").textContent = url.get("year") || "2026";
+document.getElementById("groupText").textContent = url.get("group") || "Emlak Grubu";
+
+/* SES ON/OFF */
+let soundEnabled = false;
+const musicBtn = document.getElementById("musicBtn");
+const musicLabel = document.getElementById("musicLabel");
+
+musicBtn.onclick = () => {
+    soundEnabled = !soundEnabled;
+    musicBtn.textContent = soundEnabled ? "🔊" : "🔇";
+    musicLabel.textContent = soundEnabled ? "Ses Açık" : "Ses Kapalı";
+};
+
+/* ============================================================
+      TOK PATLAMA SESİ — GELİŞMİŞ "BOOM"
+============================================================ */
 function playBoom() {
     if (!soundEnabled) return;
 
     const audio = new (window.AudioContext || window.webkitAudioContext)();
 
-    /* ============================================
-       1) STEREO PANNER — 3D efekti için
-    ============================================ */
-    const panner = audio.createStereoPanner();
-    // Patlama her seferinde hafif farklı bir konumdan gelir
-    panner.pan.value = (Math.random() * 2 - 1) * 0.8; // -0.8 ile 0.8 arası
-
-
-    /* ============================================
-       2) TOK BASS PATLAMASI (Ana BOOM çekirdeği)
-    ============================================ */
+    /* 1) Tok bass çekirdeği */
     const osc = audio.createOscillator();
     const gain = audio.createGain();
 
     osc.type = "sine";
-    osc.frequency.setValueAtTime(70, audio.currentTime);
-    osc.frequency.exponentialRampToValueAtTime(22, audio.currentTime + 0.5);
+    osc.frequency.setValueAtTime(55, audio.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(18, audio.currentTime + 0.35);
 
-    gain.gain.setValueAtTime(3.0, audio.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, audio.currentTime + 0.6);
+    gain.gain.setValueAtTime(2.8, audio.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, audio.currentTime + 0.35);
 
-    osc.connect(gain).connect(panner).connect(audio.destination);
-
+    osc.connect(gain);
+    gain.connect(audio.destination);
     osc.start();
-    osc.stop(audio.currentTime + 0.6);
+    osc.stop(audio.currentTime + 0.35);
 
-
-    /* ============================================
-       3) BÜYÜK GÜRÜLTÜ PATLAMASI (Havai fişek genişliği)
-    ============================================ */
+    /* 2) Gürültü patlaması */
     const bufferSize = 2 * audio.sampleRate;
-    const noiseBuffer = audio.createBuffer(2, bufferSize, audio.sampleRate);
+    const noiseBuffer = audio.createBuffer(1, bufferSize, audio.sampleRate);
+    const data = noiseBuffer.getChannelData(0);
 
-    // L/R kanallarına farklı gürültü veriyoruz (3D genişlik)
-    for (let ch = 0; ch < 2; ch++) {
-        const output = noiseBuffer.getChannelData(ch);
-        for (let i = 0; i < bufferSize; i++) {
-            output[i] = (Math.random() * 2 - 1) *
-                         (1 - i / bufferSize) *
-                         1.3;
-        }
+    for (let i = 0; i < bufferSize; i++) {
+        data[i] = (Math.random() * 2 - 1) * (1 - i / bufferSize) * 1.4;
     }
 
     const noise = audio.createBufferSource();
     noise.buffer = noiseBuffer;
 
-    // Hafif genişleme için gain
     const noiseGain = audio.createGain();
-    noiseGain.gain.setValueAtTime(2.0, audio.currentTime);
-    noiseGain.gain.exponentialRampToValueAtTime(0.001, audio.currentTime + 1.2);
+    noiseGain.gain.setValueAtTime(2.4, audio.currentTime);
+    noiseGain.gain.exponentialRampToValueAtTime(0.01, audio.currentTime + 0.5);
 
-    noise.connect(noiseGain).connect(panner).connect(audio.destination);
-
+    noise.connect(noiseGain);
+    noiseGain.connect(audio.destination);
     noise.start();
-    noise.stop(audio.currentTime + 1.3);
+    noise.stop(audio.currentTime + 0.5);
 
-
-    /* ============================================
-       4) PATLAMA ANINDA "PUNCH" — şok etkisi
-    ============================================ */
+    /* 3) Punch efekti */
     const punchOsc = audio.createOscillator();
     const punchGain = audio.createGain();
 
     punchOsc.type = "square";
-    punchOsc.frequency.setValueAtTime(220, audio.currentTime);
+    punchOsc.frequency.setValueAtTime(180, audio.currentTime);
 
-    punchGain.gain.setValueAtTime(1.2, audio.currentTime);
-    punchGain.gain.exponentialRampToValueAtTime(0.001, audio.currentTime + 0.15);
+    punchGain.gain.setValueAtTime(0.9, audio.currentTime);
+    punchGain.gain.exponentialRampToValueAtTime(0.01, audio.currentTime + 0.12);
 
-    punchOsc.connect(punchGain).connect(panner).connect(audio.destination);
+    punchOsc.connect(punchGain);
+    punchGain.connect(audio.destination);
 
     punchOsc.start();
-    punchOsc.stop(audio.currentTime + 0.15);
-
-
-    /* ============================================
-       5) UZUN YANKI (REVERB BENZERİ KUYRUK)
-    ============================================ */
-    const reverbBufferSize = audio.sampleRate * 1.5; // ~1.5 sn reverb
-    const reverbBuffer = audio.createBuffer(2, reverbBufferSize, audio.sampleRate);
-
-    for (let ch = 0; ch < 2; ch++) {
-        const channelData = reverbBuffer.getChannelData(ch);
-        for (let i = 0; i < reverbBufferSize; i++) {
-            channelData[i] =
-                (Math.random() * 2 - 1) * // random
-                Math.pow(1 - i / reverbBufferSize, 2) * // daha uzun ve yumuşak decay
-                0.4; // yankı seviyesi
-        }
-    }
-
-    const reverb = audio.createBufferSource();
-    reverb.buffer = reverbBuffer;
-
-    const reverbGain = audio.createGain();
-    reverbGain.gain.setValueAtTime(0.6, audio.currentTime);
-    reverbGain.gain.exponentialRampToValueAtTime(0.001, audio.currentTime + 1.5);
-
-    reverb.connect(reverbGain).connect(panner).connect(audio.destination);
-
-    reverb.start();
-    reverb.stop(audio.currentTime + 1.5);
+    punchOsc.stop(audio.currentTime + 0.12);
 }
+
+/* CANVAS AYARLARI */
+const snowCanvas = document.getElementById("snowCanvas");
+const snowCtx = snowCanvas.getContext("2d");
+const fwCanvas = document.getElementById("fireworksCanvas");
+const fwCtx = fwCanvas.getContext("2d");
+const starsCanvas = document.getElementById("starsCanvas");
+const starsCtx = starsCanvas.getContext("2d");
+const confCanvas = document.getElementById("confettiCanvas");
+const confCtx = confCanvas.getContext("2d");
+
+function resizeAll(){
+  snowCanvas.width = innerWidth;
+  snowCanvas.height = innerHeight;
+  fwCanvas.width = innerWidth;
+  fwCanvas.height = innerHeight;
+  starsCanvas.width = innerWidth;
+  starsCanvas.height = innerHeight;
+  confCanvas.width = innerWidth;
+  confCanvas.height = innerHeight;
+}
+resizeAll();
+addEventListener("resize", resizeAll);
+
+/* Yıldızlar */
+let stars = [];
+for(let i=0;i<120;i++){
+  stars.push({
+    x:Math.random()*innerWidth,
+    y:Math.random()*innerHeight,
+    s:Math.random()*2,
+    v:0.2 + Math.random()*0.6
+  });
+}
+function drawStars(){
+  starsCtx.clearRect(0,0,starsCanvas.width,starsCanvas.height);
+  starsCtx.fillStyle="white";
+
+  for(let st of stars){
+    starsCtx.fillRect(st.x,st.y,st.s,st.s);
+    st.x+=st.v;
+    st.y+=st.v*0.3;
+    if(st.x>innerWidth || st.y>innerHeight){
+      st.x=Math.random()*innerWidth;
+      st.y=-10;
+    }
+  }
+  requestAnimationFrame(drawStars);
+}
+drawStars();
+
+/* Kar */
+let flakes=[];
+for(let i=0;i<250;i++){
+  flakes.push({
+    x:Math.random()*innerWidth,
+    y:Math.random()*innerHeight,
+    r:1+Math.random()*3,
+    vy:1+Math.random()*2,
+    vx:(Math.random()-0.5)*0.6
+  });
+}
+function drawSnow(){
+  snowCtx.clearRect(0,0,snowCanvas.width,snowCanvas.height);
+  snowCtx.fillStyle="white";
+  snowCtx.beginPath();
+
+  for(let f of flakes){
+    snowCtx.moveTo(f.x,f.y);
+    snowCtx.arc(f.x,f.y,f.r,0,Math.PI*2);
+    f.y+=f.vy;
+    f.x+=f.vx + Math.sin(f.y/60)*0.3;
+
+    if(f.y>innerHeight){
+      f.y=-10;
+      f.x=Math.random()*innerWidth;
+    }
+  }
+  snowCtx.fill();
+  requestAnimationFrame(drawSnow);
+}
+drawSnow();
+
+/* Konfeti */
+let confetti=[];
+for(let i=0;i<180;i++){
+  confetti.push({
+    x:Math.random()*innerWidth,
+    y:Math.random()*innerHeight,
+    r:4 + Math.random()*6,
+    vy:1 + Math.random()*3,
+    color:`hsl(${Math.random()*360},90%,60%)`
+  });
+}
+function drawConfetti(){
+  confCtx.clearRect(0,0,confCanvas.width,confCanvas.height);
+  for(let c of confetti){
+    confCtx.fillStyle=c.color;
+    confCtx.fillRect(c.x,c.y,c.r,c.r);
+    c.y+=c.vy;
+    if(c.y>innerHeight){
+      c.y=-10;
+      c.x=Math.random()*innerWidth;
+    }
+  }
+  requestAnimationFrame(drawConfetti);
+}
+drawConfetti();
+
+/* Havai fişek */
+let rockets=[], particles=[];
+
+function launch(){
+  rockets.push({
+    x:Math.random()*fwCanvas.width,
+    y:fwCanvas.height+10,
+    ty:60 + Math.random()*(fwCanvas.height*0.45),
+    s:6 + Math.random()*3
+  });
+}
+
+function explode(x,y){
+  playBoom(); // SES BURADA
+
+  for(let i=0;i<60;i++){
+    const a=Math.random()*Math.PI*2;
+    const sp=1+Math.random()*4;
+    particles.push({
+      x,y,
+      vx:Math.cos(a)*sp,
+      vy:Math.sin(a)*sp,
+      life:60,
+      age:0,
+      color:`hsl(${Math.random()*360},100%,70%)`
+    });
+  }
+}
+
+function drawFW(){
+  fwCtx.clearRect(0,0,fwCanvas.width,fwCanvas.height);
+
+  for(let i=rockets.length-1;i>=0;i--){
+    let r=rockets[i];
+    r.y-=r.s;
+
+    fwCtx.fillStyle="white";
+    fwCtx.fillRect(r.x,r.y,3,8);
+
+    if(r.y<=r.ty){
+      explode(r.x,r.y);
+      rockets.splice(i,1);
+    }
+  }
+
+  for(let i=particles.length-1;i>=0;i--){
+    let p=particles[i];
+    p.x+=p.vx;
+    p.y+=p.vy;
+    p.vy+=0.02;
+    p.age++;
+
+    let a=Math.max(0,1-(p.age/p.life));
+    fwCtx.fillStyle=p.color;
+    fwCtx.globalAlpha=a;
+    fwCtx.fillRect(p.x,p.y,3,3);
+    fwCtx.globalAlpha=1;
+
+    if(p.age>=p.life) particles.splice(i,1);
+  }
+
+  requestAnimationFrame(drawFW);
+}
+drawFW();
+
+setInterval(launch, 1000);
+</script>
+
+</body>
+</html>
