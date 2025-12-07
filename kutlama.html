@@ -140,7 +140,7 @@ function playBoom(){
     osc.type = "sine";
     osc.frequency.setValueAtTime(60, now);
     osc.frequency.exponentialRampToValueAtTime(18, now + 0.5);
-    gain.gain.setValueAtTime(1.5, now);
+    gain.gain.setValueAtTime(1.0, now);
     gain.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
     osc.connect(gain);
     gain.connect(audioCtx.destination);
@@ -152,12 +152,12 @@ function playBoom(){
     const noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
     const data = noiseBuffer.getChannelData(0);
     for(let i=0;i<bufferSize;i++){
-        data[i]=(Math.random()*2-1)*(1-i/bufferSize)*1.2;
+        data[i]=(Math.random()*2-1)*(1-i/bufferSize)*0.9;
     }
     const noise = audioCtx.createBufferSource();
     noise.buffer=noiseBuffer;
     const noiseGain = audioCtx.createGain();
-    noiseGain.gain.setValueAtTime(1.2, now);
+    noiseGain.gain.setValueAtTime(0.9, now);
     noiseGain.gain.exponentialRampToValueAtTime(0.01, now + 0.5);
     noise.connect(noiseGain);
     noiseGain.connect(audioCtx.destination);
@@ -169,7 +169,7 @@ function playBoom(){
     const punchGain = audioCtx.createGain();
     punchOsc.type="square";
     punchOsc.frequency.setValueAtTime(200, now);
-    punchGain.gain.setValueAtTime(0.4, now);
+    punchGain.gain.setValueAtTime(0.3, now);
     punchGain.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
     punchOsc.connect(punchGain);
     punchGain.connect(audioCtx.destination);
@@ -243,7 +243,7 @@ let rockets=[],particles=[];
 
 /* ROCKET LAUNCH */
 function launch(){
-    let count = 8 + Math.floor(Math.random()*3); // 8-10 roket
+    let count = 5 + Math.floor(Math.random()*3); // 5-7 roket
     for(let i=0;i<count;i++){
         rockets.push({
             x:Math.random()*fwCanvas.width,
@@ -271,7 +271,7 @@ function explode(x,y){
     }
     // Patlama sesini rastgele gecikmeli çal
     if(soundEnabled){
-        const delay = Math.random()*0.3;
+        const delay = Math.random() * 0.6; // 0-0.6 saniye
         setTimeout(()=>playBoom(), delay*1000);
     }
 }
@@ -306,7 +306,7 @@ function drawFW(){
 }
 drawFW();
 
-// Daha doğal ve dağıtılmış patlamalar
+// Daha doğal patlamalar
 setInterval(launch, 1000);
 </script>
 
