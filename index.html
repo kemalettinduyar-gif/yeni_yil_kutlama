@@ -5,6 +5,28 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Mutlu Yıllar</title>
 
+  <!-- GİZLİ VERSİYON KONTROLÜ -->
+  <script>
+  (function(){
+    document.addEventListener("DOMContentLoaded", () => {
+      setTimeout(() => {
+        try {
+          const KEY = "page_v_final";
+          const url = new URL(window.location.href);
+          const v = url.searchParams.get("v");
+          const saved = sessionStorage.getItem(KEY);
+          if (!v || v !== saved) {
+            const newV = Date.now().toString();
+            sessionStorage.setItem(KEY, newV);
+            const clean = window.location.origin + window.location.pathname;
+            window.location.href = clean + "?v=" + newV;
+          }
+        } catch(e){ }
+      }, 400);
+    });
+  })();
+  </script>
+
   <style>
     html,body{
       height:100%;
@@ -19,20 +41,27 @@
       position: fixed;
       left:0; top:0;
       width:100vw; height:100vh;
-      pointer-events:none;
-      z-index:10;
+      pointer-events: none;
+      z-index: 10;
     }
 
-    .title-wrap{
-      position: fixed; 
-      top:28px; 
-      width:100%; 
-      text-align:center; 
-      z-index:60; 
-      pointer-events:none;
+    .title{
+      position: fixed; top:28px; width:100%; text-align:center; z-index:60;
     }
-    h1{ color:#ffd24c; margin:0; font-size:2.1rem; text-shadow:0 0 12px #000; }
-    h2{ margin:6px 0 0; font-size:1rem; opacity:.95; letter-spacing:1.2px; }
+
+    h1{
+      color:#ffd24c;
+      margin:0;
+      font-size:2.6rem;
+      text-shadow:0 0 14px #000;
+    }
+    h2{
+      margin:10px 0 0;
+      font-size:1.35rem;
+      opacity:.96;
+      letter-spacing:1.3px;
+      text-shadow:0 0 10px #000;
+    }
 
     .panel{
       position: fixed;
@@ -68,46 +97,41 @@
       white-space: nowrap;
     }
 
-    /* ---------------------------------------------------
-       📌 AÇILIŞ EKRANI TASARIMI
-    --------------------------------------------------- */
-    #startScreen{
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.85);
+    /* GİRİŞ EKRANI */
+    #inputScreen{
+      position:fixed;
+      inset:0;
+      background:#020307;
       display:flex;
       flex-direction:column;
       align-items:center;
       justify-content:center;
-      z-index:99999;
-    }
-    #startBox{
-      background: rgba(255,255,255,0.08);
+      z-index:200;
+      color:white;
       padding:20px;
-      border-radius:14px;
-      backdrop-filter: blur(8px);
-      width: 260px;
-      text-align:center;
-      border:1px solid rgba(255,255,255,0.12);
     }
-    #startBox input{
-      width:100%;
+    #inputScreen h3{
+      font-size:1.8rem;
+      margin-bottom:20px;
+    }
+    #inputScreen input{
+      width:260px;
       padding:10px;
+      margin-top:12px;
       border-radius:8px;
       border:none;
-      margin-top:10px;
-      font-size:15px;
-      text-align:center;
       outline:none;
-    }
-    #beginBtn{
-      margin-top:15px;
-      width:100%;
-      padding:10px;
-      background:#ffd24c;
-      border:none;
-      border-radius:8px;
       font-size:16px;
+      text-align:center;
+    }
+    #startMain{
+      margin-top:20px;
+      padding:12px 20px;
+      border:none;
+      border-radius:10px;
+      background:#ffd24c;
+      color:#000;
+      font-size:17px;
       cursor:pointer;
       font-weight:bold;
     }
@@ -115,26 +139,28 @@
 </head>
 <body>
 
-<!-- 🚀 AÇILIŞ EKRANI -->
-<div id="startScreen">
-  <div id="startBox">
-    <h3>Bilgileri Giriniz</h3>
-    <input id="yearInput" type="number" placeholder="Yıl ör: 2026">
-    <input id="groupInput" type="text" placeholder="Grup ör: EMLAK GRUBU">
-    <button id="beginBtn">Başlat</button>
-  </div>
+<!-- ==================== GİRİŞ EKRANI ==================== -->
+<div id="inputScreen">
+  <h3>Yeni Yıl Kutlamasına Hoş Geldiniz 🎉</h3>
+
+  <input id="yearInput" type="number" placeholder="Yıl (ör: 2026)">
+  <input id="groupInput" type="text" placeholder="Grup Adı (ör: Emlak Grubu)">
+
+  <button id="startMain">Başla</button>
 </div>
 
 
-<!-- ⭐ BAŞLIK -->
-<div class="title-wrap">
-    <h1 id="yearTitle">Mutlu Yıllar 🎆</h1>
-    <h2 id="groupTitle"></h2>
+<!-- ==================== ANA BAŞLIK ==================== -->
+<div class="title">
+    <h1>Mutlu Yıllar <span id="yearText">2026</span> 🎆</h1>
+    <h2>Mutlu Yıllar <span id="groupText">Emlak Grubu</span></h2>
 </div>
 
+<!-- Arka Plan Animasyonları -->
 <canvas id="snowCanvas"></canvas>
 <canvas id="fireworksCanvas"></canvas>
 
+<!-- Kontrol Paneli -->
 <div class="panel">
   <button id="soundBtn" aria-pressed="false">🔇 Ses Kapalı</button>
   <button id="startBtn">🎆 Kutlamayı Başlat</button>
@@ -142,42 +168,28 @@
 
 <div class="footer">Bu sayfa: Kemalettin Duyar tarafından hazırlanmıştır.</div>
 
-
 <script>
-/* ----------------------------------------------------
-   📌 AÇILIŞ EKRANI KONTROLÜ
----------------------------------------------------- */
+/* ============================================================
+    GİRİŞ EKRANI — DEĞİŞKENLERİ AL, ANA EKRANA AKTAR
+============================================================ */
+document.getElementById("startMain").onclick = () => {
+    const yil = document.getElementById("yearInput").value;
+    const grup = document.getElementById("groupInput").value;
 
-const startScreen = document.getElementById("startScreen");
-const beginBtn = document.getElementById("beginBtn");
+    if(!yil || !grup){
+        alert("Lütfen yıl ve grup adını doldurunuz!");
+        return;
+    }
 
-const yearInput = document.getElementById("yearInput");
-const groupInput = document.getElementById("groupInput");
+    document.getElementById("yearText").textContent = yil;
+    document.getElementById("groupText").textContent = grup;
 
-const yearTitle = document.getElementById("yearTitle");
-const groupTitle = document.getElementById("groupTitle");
-
-beginBtn.onclick = () => {
-  const y = yearInput.value.trim();
-  const g = groupInput.value.trim();
-
-  if(!y || !g){
-    alert("Lütfen tüm bilgileri giriniz.");
-    return;
-  }
-
-  yearTitle.textContent = `Mutlu Yıllar ${y} 🎆`;
-  groupTitle.textContent = g.toUpperCase();
-
-  startScreen.style.display = "none";
+    document.getElementById("inputScreen").style.display = "none";
 };
 
-
-
-/* ----------------------------------------------------
-   📌 SNOW / FIREWORKS / SES KISMI — Orijinal kod
----------------------------------------------------- */
-
+/* ============================================================
+   CANVAS VE ANİMASYON SİSTEMİ
+============================================================ */
 const snowCanvas = document.getElementById('snowCanvas');
 const snowCtx = snowCanvas.getContext('2d');
 const fwCanvas = document.getElementById('fireworksCanvas');
@@ -192,7 +204,7 @@ function resizeAll(){
 window.addEventListener('resize', resizeAll);
 resizeAll();
 
-/* -------------------- Snow -------------------- */
+/* -------------------- KAR YAĞIŞI -------------------- */
 let flakes = [];
 function initFlakes(n=260){
   flakes = [];
@@ -223,12 +235,14 @@ function drawSnow(){
     if(f.y > window.innerHeight+10){
       f.y = -10; f.x = Math.random()*window.innerWidth;
     }
+    if(f.x < -20) f.x = window.innerWidth + 20;
+    if(f.x > window.innerWidth + 20) f.x = -20;
   }
   requestAnimationFrame(drawSnow);
 }
 requestAnimationFrame(drawSnow);
 
-/* -------------------- Fireworks -------------------- */
+/* -------------------- HAVAİ FİŞEKLER -------------------- */
 let rockets = [], particles = [], autoLaunch = null;
 
 function launchRocket(){
@@ -255,6 +269,7 @@ function explode(x,y){
       color: colors[Math.floor(Math.random()*colors.length)]
     });
   }
+
   if(soundEnabled) playExplosionSound();
 }
 
@@ -266,6 +281,7 @@ function drawFW(){
     r.y -= r.speed;
     fwCtx.fillStyle = "#fff";
     fwCtx.fillRect(r.x, r.y, 3, 8);
+
     if(r.y <= r.targetY){
       explode(r.x, r.y);
       rockets.splice(i,1);
@@ -279,10 +295,11 @@ function drawFW(){
     p.y += p.vy;
     p.age++;
     const a = Math.max(0, 1 - p.age / p.life);
-    fwCtx.fillStyle = hexToRgba(p.color, a);
+    fwCtx.fillStyle = `rgba(${p.color}, ${a})`;
     fwCtx.fillRect(p.x, p.y, 2, 2);
     if(p.age >= p.life) particles.splice(i,1);
   }
+
   requestAnimationFrame(drawFW);
 }
 requestAnimationFrame(drawFW);
@@ -292,15 +309,14 @@ function hexToRgba(hex, a){
   return `rgba(${parseInt(c.substr(0,2),16)},${parseInt(c.substr(2,2),16)},${parseInt(c.substr(4,2),16)},${a})`;
 }
 
-/* -------------------- Web Audio -------------------- */
+/* -------------------- SES SİSTEMİ -------------------- */
 let audioCtx = null;
 let soundEnabled = false;
 
 function ensureAudioContext(){
   if(!audioCtx){
     audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-  }
-  else if(audioCtx.state === 'suspended'){
+  } else if(audioCtx.state === 'suspended'){
     audioCtx.resume();
   }
 }
@@ -309,12 +325,15 @@ function playExplosionSound(){
   ensureAudioContext();
   const ctx = audioCtx;
   const now = ctx.currentTime;
+
   const bufferSize = Math.floor(ctx.sampleRate * 0.38);
   const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
   const data = buffer.getChannelData(0);
+
   for(let i=0;i<bufferSize;i++){
     data[i] = (Math.random()*2-1) * Math.pow(1 - i/bufferSize, 3);
   }
+
   const noise = ctx.createBufferSource();
   noise.buffer = buffer;
 
@@ -334,7 +353,7 @@ function playExplosionSound(){
   noise.stop(now+0.45);
 }
 
-/* -------------------- Kontroller -------------------- */
+/* -------------------- BUTONLAR -------------------- */
 document.getElementById('soundBtn').onclick = () => {
   ensureAudioContext();
   soundEnabled = !soundEnabled;
@@ -350,6 +369,5 @@ document.getElementById('startBtn').onclick = () => {
   launchRocket();
 };
 </script>
-
 </body>
 </html>
