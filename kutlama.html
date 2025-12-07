@@ -238,9 +238,9 @@ drawSnow();
 /* Havai fişek */
 let rockets=[],particles=[];
 
-/* ---> 5-6 ROCKET SAME TIME <--- */
+/* ---> ROCKET SAYISI ARTIRILDI <--- */
 function launch(){
-    let count = 5 + Math.floor(Math.random()*2);
+    let count = 12 + Math.floor(Math.random()*5); // 12-16 roket aynı anda fırlayacak
     for(let i=0;i<count;i++){
         rockets.push({
             x:Math.random()*fwCanvas.width,
@@ -297,7 +297,8 @@ function drawFW(){
 }
 drawFW();
 
-setInterval(launch, 1200);
+// Daha hızlı ve yoğun patlama
+setInterval(launch, 900); // her 0.9 saniyede yeni roketler
 </script>
 
 </body>
