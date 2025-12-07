@@ -1,173 +1,99 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Mutlu Yıllar 2026 — Emlak Grubu</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Yeni Yıl Kutlama Linki</title>
 
-  <style>
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: #f4f4f4;
-      text-align: center;
-    }
-
-    .container {
-      margin-top: 60px;
-    }
-
-    input, button {
-      padding: 12px;
-      font-size: 17px;
-      margin: 10px;
-      width: 260px;
-      border-radius: 10px;
-      border: 1px solid #ccc;
-    }
-
-    #startBtn {
-      background: #0066ff;
-      color: white;
-      border: none;
-      font-weight: bold;
-      cursor: pointer;
-    }
-
-    #waBtn {
-      background: #25D366;
-      color: white;
-      border: none;
-      font-weight: bold;
-      cursor: pointer;
-    }
-
-    h1, h2 {
-      margin: 0;
-      padding: 0;
-      text-align: left;
-      margin-left: 20px;
-    }
-
-    #mainContent {
-      display: none;
-    }
-  </style>
+<style>
+body{
+    background:#0b0f19;
+    color:white;
+    font-family:Arial;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    height:100vh;
+    margin:0;
+    padding:20px;
+}
+h2{
+    font-size:1.8rem;
+    margin-bottom:20px;
+}
+input{
+    width:260px;
+    padding:12px;
+    margin-top:10px;
+    border-radius:8px;
+    border:none;
+    font-size:16px;
+    text-align:center;
+}
+button{
+    padding:12px 20px;
+    border:none;
+    border-radius:10px;
+    cursor:pointer;
+    font-size:17px;
+    margin-top:15px;
+}
+#waBtn{
+    background:#25D366;
+    color:#fff;
+    font-weight:bold;
+}
+#previewBtn{
+    background:#ffd24c;
+    color:#000;
+    font-weight:bold;
+}
+</style>
 </head>
-
 <body>
 
-  <!-- ============================= -->
-  <!--   GİRİŞ EKRANI               -->
-  <!-- ============================= -->
-  <div id="inputScreen" class="container">
-    <h2>Yıl Giriniz</h2>
-    <input id="yearInput" type="number" placeholder="Örn: 2026" />
+<h2>Yeni Yıl Kutlama Sayfası Oluştur</h2>
 
-    <h2>Grup Adı</h2>
-    <input id="groupInput" type="text" placeholder="Örn: Emlak Grubu" />
+<input id="yearInput" type="number" placeholder="Yıl (örn: 2026)">
+<input id="groupInput" type="text" placeholder="Grup Adı (örn: Emlak Grubu)">
 
-    <button id="startBtn">Başla</button>
-
-    <button id="waBtn">📲 WhatsApp ile Gönder</button>
-  </div>
-
-  <!-- ============================= -->
-  <!--   ANA SAYFA                  -->
-  <!-- ============================= -->
-  <div id="mainContent" class="container">
-    <h1 id="title">Mutlu Yıllar 🎆</h1>
-    <h2 id="subtitle">MUTLU YILLAR GRUBU</h2>
-
-    <p style="font-size:20px; margin-top:30px;">
-      Yeni yılınız kutlu olsun! 🎉
-    </p>
-  </div>
-
-
+<button id="previewBtn">➡ Kutlamayı Aç</button>
+<button id="waBtn">📲 WhatsApp ile Gönder</button>
 
 <script>
 /* ============================================================
-     CACHE OTOMATİK GÜNCELLEYİCİ
+   DOĞRUDAN KUTLAMA SAYFASINI AÇ
 ============================================================ */
-(function(){
-    let oldV = localStorage.getItem("ver") || 0;
-    let newV =  Math.floor(Date.now() / 1000);
+document.getElementById("previewBtn").onclick = () => {
+    const yil = yearInput.value;
+    const grup = groupInput.value;
 
-    if (newV - oldV > 30) {
-        localStorage.setItem("ver", newV);
-
-        let clean = window.location.origin + window.location.pathname;
-        window.location.href = clean + "?v=" + newV;
-    }
-})();
-</script>
-
-
-<script>
-/* ============================================================
-     URL PARAMETRESI OKU
-============================================================ */
-function getParam(name) {
-    return new URLSearchParams(window.location.search).get(name);
-}
-
-const paramYear = getParam("year");
-const paramGroup = getParam("group");
-
-if (paramYear && paramGroup) {
-    loadMain(paramYear, paramGroup);
-}
-
-
-/* ============================================================
-     GİRİŞ EKRANI BAŞLA BUTONU
-============================================================ */
-document.getElementById("startBtn").onclick = () => {
-    const yil = document.getElementById("yearInput").value;
-    const grup = document.getElementById("groupInput").value;
-
-    if (!yil || !grup) {
-        alert("Lütfen yıl ve grup adını giriniz.");
-        return;
-    }
-
-    loadMain(yil, grup);
-};
-
-
-/* ============================================================
-     ANA SAYFAYI AÇAN FONKSIYON
-============================================================ */
-function loadMain(yil, grup) {
-    document.getElementById("inputScreen").style.display = "none";
-    document.getElementById("mainContent").style.display = "block";
-
-    document.getElementById("title").innerText = "Mutlu Yıllar " + yil + " 🎆";
-    document.getElementById("subtitle").innerText = "MUTLU YILLAR " + grup.toUpperCase();
-}
-
-
-/* ============================================================
-     WHATSAPP LİNK OLUŞTUR — PAYLAŞ
-============================================================ */
-document.getElementById("waBtn").onclick = () => {
-    const yil = document.getElementById("yearInput").value;
-    const grup = document.getElementById("groupInput").value;
-
-    if (!yil || !grup) {
+    if(!yil || !grup){
         alert("Lütfen yıl ve grup adını doldurunuz!");
         return;
     }
 
-    // Mevcut sayfa URL'si
-    const base = window.location.origin + window.location.pathname;
+    const url = "/kutlama.html?year="+encodeURIComponent(yil)+"&group="+encodeURIComponent(grup);
+    window.location.href = url;
+};
 
-    // Link üret
+/* ============================================================
+   WHATSAPP PAYLAŞIM LİNKİ
+============================================================ */
+document.getElementById("waBtn").onclick = () => {
+    const yil = yearInput.value;
+    const grup = groupInput.value;
+
+    if(!yil || !grup){
+        alert("Lütfen yıl ve grup adını doldurunuz!");
+        return;
+    }
+
+    const base = window.location.origin + "/kutlama.html";
     const link = `${base}?year=${encodeURIComponent(yil)}&group=${encodeURIComponent(grup)}`;
 
     const text = `🎉 Yeni Yıl Kutlama Sayfası\n\nYıl: ${yil}\nGrup: ${grup}\n\nAçmak için tıkla:\n${link}`;
-
     const waURL = "https://wa.me/?text=" + encodeURIComponent(text);
 
     window.location.href = waURL;
