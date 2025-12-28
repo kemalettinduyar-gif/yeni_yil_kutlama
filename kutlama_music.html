@@ -1,1 +1,160 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Mutlu Yıllar</title>
 
+<style>
+html,body{
+  margin:0;
+  padding:0;
+  height:100%;
+  overflow:hidden;
+  background: radial-gradient(ellipse at bottom, #0a0f1f 0%, #00040c 80%);
+  font-family: Arial, Helvetica, sans-serif;
+  color:white;
+}
+
+#musicBtn{
+  position:fixed;
+  top:18px;
+  right:18px;
+  width:50px;
+  height:50px;
+  background:rgba(255,255,255,0.15);
+  border:1px solid rgba(255,255,255,0.3);
+  backdrop-filter:blur(3px);
+  border-radius:50%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:24px;
+  cursor:pointer;
+  z-index:200;
+}
+
+#musicLabel{
+  position:fixed;
+  top:76px;
+  right:10px;
+  font-size:14px;
+  opacity:0.9;
+}
+
+.title{
+  position:fixed;
+  top:28px;
+  left:50%;
+  transform:translateX(-50%);
+  text-align:center;
+}
+
+.title h1{
+  font-size:2.5rem;
+  color:#ffd24c;
+}
+
+.title h2{
+  margin-top:10px;
+  font-size:1.6rem;
+}
+
+.footer{
+  position:fixed;
+  bottom:16px;
+  left:50%;
+  transform:translateX(-50%);
+  background:rgba(0,0,0,0.35);
+  padding:6px 14px;
+  border-radius:8px;
+}
+
+canvas{
+  position:fixed;
+  left:0;
+  top:0;
+  width:100vw;
+  height:100vh;
+  pointer-events:none;
+}
+</style>
+</head>
+
+<body>
+
+<button id="musicBtn">🔇</button>
+<div id="musicLabel">Ses Kapalı</div>
+
+<div class="title">
+  <h1>Mutlu Yıllar <span id="yearText"></span> 🎉</h1>
+  <h2><span id="groupText"></span></h2>
+</div>
+
+<canvas id="starsCanvas"></canvas>
+<canvas id="snowCanvas"></canvas>
+
+<div class="footer">Kemalettin Duyar</div>
+
+<!-- 🎵 MÜZİK -->
+<audio id="bgMusic" loop>
+  <source src="input.mp3" type="audio/mpeg">
+</audio>
+
+<script>
+/* URL PARAMETRELERİ */
+const p = new URLSearchParams(location.search);
+document.getElementById("yearText").textContent = p.get("year") || "2026";
+document.getElementById("groupText").textContent = p.get("group") || "Yeni Yılınız Kutlu Olsun";
+
+/* SES */
+const music = document.getElementById("bgMusic");
+const btn = document.getElementById("musicBtn");
+const label = document.getElementById("musicLabel");
+
+let playing = false;
+
+btn.onclick = () => {
+  if(!playing){
+    music.play();
+    btn.textContent = "🔊";
+    label.textContent = "Müzik Açık";
+  }else{
+    music.pause();
+    btn.textContent = "🔇";
+    label.textContent = "Müzik Kapalı";
+  }
+  playing = !playing;
+};
+
+/* YILDIZLAR */
+const starsCanvas = document.getElementById("starsCanvas");
+const sctx = starsCanvas.getContext("2d");
+
+function resize(){
+  starsCanvas.width = innerWidth;
+  starsCanvas.height = innerHeight;
+}
+resize();
+addEventListener("resize",resize);
+
+let stars=[];
+for(let i=0;i<160;i++){
+  stars.push({x:Math.random()*innerWidth,y:Math.random()*innerHeight,s:Math.random()*2,v:0.2+Math.random()});
+}
+
+function drawStars(){
+  sctx.clearRect(0,0,starsCanvas.width,starsCanvas.height);
+  sctx.fillStyle="white";
+  for(let s of stars){
+    sctx.fillRect(s.x,s.y,s.s,s.s);
+    s.y+=s.v;
+    if(s.y>innerHeight){ s.y=-5; s.x=Math.random()*innerWidth; }
+  }
+  requestAnimationFrame(drawStars);
+}
+drawStars();
+</script>
+
+</body>
+</html>
