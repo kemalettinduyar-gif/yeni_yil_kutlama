@@ -152,10 +152,16 @@ function kutlamayiAc() {
 
   const base = getBasePath();
 
-  const url = base + "kutlama.html?year=" +
+  const url = base + "kutlama_havai_fisek.html?year=" +
               encodeURIComponent(yil) +
               "&group=" +
               encodeURIComponent(grup);
+  // *********  Bu kısım değişecek ************
+  // const url = base + "kutlama_music.html?year=" +
+  //            encodeURIComponent(yil) +
+  //            "&group=" +
+  //            encodeURIComponent(grup);
+  // *********  Bu kısım değişecek ************
 
   window.location.href = url;
 }
